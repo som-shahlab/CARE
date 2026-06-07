@@ -1,0 +1,9 @@
+name: conformal-summ
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.8
+  - pip
+  - pip:
+    - -r requirements.txt

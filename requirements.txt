@@ -1,0 +1,19 @@
+# Core runtime — mirrors [project.dependencies] in pyproject.toml.
+# Preferred install: `pip install -e .`
+numpy>=1.24
+pandas>=2.0
+matplotlib>=3.7
+openai>=1.0
+requests>=2.31
+tqdm>=4.66
+python-dotenv>=1.0
+
+# Optional: non-LLM external scorers + token/cost table (GPU recommended).
+# Install with: `pip install -e ".[scorers]"`
+# torch
+# transformers
+# tiktoken
+# nltk
+# bert-score
+# scikit-learn
+# scipy

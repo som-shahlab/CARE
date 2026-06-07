@@ -1,0 +1,59 @@
+\begin{table*}[!t]
+\centering
+\small
+\caption{Estimated API costs and token usage for the CARE pipeline. Calibration costs are reported for 100 documents; deployment costs are per document. \textbf{Fact}, \textbf{Imp}, \textbf{Cov}: factuality, importance, and coverage scoring, respectively. $^\ddagger$ACI-Bench contains fewer than 100 calibration documents; calibration totals are mean-padded to 100 documents for comparability.}
+\label{tab:cost}
+\vspace{0.5em}
+\textbf{(a)} API costs (USD).
+\vspace{0.3em}
+
+\begin{tabular}{l rrrrr rrrrr}
+\toprule
+& \multicolumn{5}{c}{\textbf{Calibration (100 docs)}} & \multicolumn{5}{c}{\textbf{Deployment (per doc)}} \\
+\cmidrule(lr){2-6} \cmidrule(lr){7-11}
+\textbf{Dataset} & Summ. & Fact & Imp & Cov & \textbf{Total} & Summ. & Fact & Imp & Cov & \textbf{Total} \\
+\midrule
+ACI$^\ddagger$ & 0.15 & 1.53 & 2.13 & 1.78 & 5.59 & 0.001 & 0.008 & 0.014 & 0.009 & 0.032 \\
+BHC & 0.26 & 1.63 & 6.90 & 3.57 & 12.35 & 0.003 & 0.008 & 0.047 & 0.018 & 0.076 \\
+CXR & 0.02 & 0.18 & 0.19 & 0.19 & 0.58 & <0.001 & 0.001 & 0.001 & 0.001 & 0.003 \\
+Priv-DS & 1.29 & 13.23 & 85.56 & 13.81 & 113.89 & 0.013 & 0.066 & 0.719 & 0.069 & 0.867 \\
+PubMed & 0.45 & 1.91 & 14.76 & 5.67 & 22.80 & 0.005 & 0.010 & 0.121 & 0.028 & 0.163 \\
+\bottomrule
+\end{tabular}
+\par\vspace{1.5em}
+\textbf{(b)} Token usage.
+Calibration: millions of tokens for 100 documents. Deployment: thousands of tokens per document.
+\vspace{0.3em}
+
+\begin{tabular}{l rrrrr rrrrr}
+\toprule
+& \multicolumn{5}{c}{\textbf{Calibration (M tokens, 100 docs)}} & \multicolumn{5}{c}{\textbf{Deployment (K tokens, per doc)}} \\
+\cmidrule(lr){2-6} \cmidrule(lr){7-11}
+\textbf{Dataset} & Summ. & Fact & Imp & Cov & \textbf{Total} & Summ. & Fact & Imp & Cov & \textbf{Total} \\
+\midrule
+ACI$^\ddagger$ & 0.21 & 0.96 & 1.19 & 0.92 & 3.28 & 2.1 & 4.8 & 8.7 & 4.6 & 20.2 \\
+BHC & 0.37 & 1.14 & 4.38 & 1.72 & 7.61 & 3.7 & 5.7 & 31.9 & 8.6 & 49.9 \\
+CXR & 0.03 & 0.10 & 0.07 & 0.08 & 0.28 & 0.3 & 0.5 & 0.4 & 0.4 & 1.6 \\
+Priv-DS & 1.82 & 10.24 & 64.89 & 7.48 & 84.43 & 18.2 & 51.2 & 557.0 & 37.4 & 663.8 \\
+PubMed & 0.64 & 1.40 & 10.10 & 2.82 & 14.96 & 6.4 & 7.0 & 87.9 & 14.1 & 115.4 \\
+\bottomrule
+\end{tabular}
+\par\vspace{1.5em}
+\textbf{(c)} Deployment-time judge cost (USD per document) across scoring functions.
+External scorers (NLI cross-encoder, BERT embedding cosine, AlignScore) run as local GPU inference and incur no per-token API cost. Gemini 2.5 Pro was run on the two datasets where its outputs are available (App.~\ref{app:scorer-agnostic}); ``--'' marks datasets where the experiment was not run.
+\vspace{0.3em}
+
+\begin{tabular}{l c c c}
+\toprule
+\textbf{Dataset} & GPT-5-mini & Gemini 2.5 Pro & External$^{\dagger}$ \\
+\midrule
+ACI$^\ddagger$ & 0.031 & 0.154 & 0.000 \\
+BHC & 0.073 & 0.365 & 0.000 \\
+CXR & 0.003 & -- & 0.000 \\
+Priv-DS & 0.854 & -- & 0.000 \\
+PubMed & 0.158 & -- & 0.000 \\
+\bottomrule
+\end{tabular}
+\par\vspace{0.2em}
+\footnotesize $^{\dagger}$Local GPU inference for NLI (DeBERTa), Embed (BERT), and AlignScore; \$0 API cost.
+\end{table*}

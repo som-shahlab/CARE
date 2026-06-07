@@ -1,0 +1,19 @@
+\begin{table}[h!]
+\centering
+\small
+\caption{Clinician study: \textbf{omission detection during review}. Each clinician reviewed 25 documents drawn from ACI-Bench and MIMIC-BHC (12--13 control, 12--13 \textsc{CARE}-assisted). \emph{Omissions caught} is the percentage of oracle-labeled true omissions identified at review time, either through clinician highlighting or (in the \textsc{CARE} condition) \textsc{CARE}'s surfaced flags. The aggregate \textsc{CARE} vs.\ control difference is significant ($p = 0.0001$, 1-sided permutation test, 20{,}000 iterations, stratified to match the study's randomization design).}
+\label{tab:clinician-study}
+\begin{tabular}{l c rr r}
+\toprule
+ & & \multicolumn{3}{c}{Omissions caught (\%)} \\
+\cmidrule(lr){3-5}
+ & $n$ & Control & \textsc{CARE} & $\Delta$\,(pp) \\
+\midrule
+C1 & 25 & 70 & 84 & $+14$ \\
+C2 & 25 & 63 & 84 & $+22$ \\
+C3 & 25 & 20 & 68 & $+48$ \\
+\midrule
+\textbf{All clinicians} & \textbf{75} & \textbf{50.4} & \textbf{79.0} & $\mathbf{+28.7}$ \\
+\bottomrule
+\end{tabular}
+\end{table}

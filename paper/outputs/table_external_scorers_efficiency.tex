@@ -1,0 +1,46 @@
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\caption{\textbf{Validity is scorer-agnostic; efficiency is not.} Companion to Table~\ref{tab:external-scorers}. Each dataset block groups rows into \emph{LLM-based judges} (\textsc{GPT-5-mini}, the main pipeline; \textsc{Gemini~2.5~Pro} as a second LLM family on the two datasets we ran it on) and \emph{External scorers} from the faithfulness-evaluation literature (NLI cross-encoder, BERT embedding cosine, AlignScore). All scorers run \textsc{Care} at $\alpha=0.15$ over the same 100 random 70/30 cal/test resplits. \emph{Flagged}: mean sentences flagged per document (and \% of total), matching Tables~\ref{tab:main-results}--\ref{tab:baselines}. \emph{Rec\%}: mean fraction of true hallucinations / true omissions surfaced. All scorers maintain $\alpha$-validity (Table~\ref{tab:external-scorers}). LLM-based judges achieve it with substantially fewer flags at comparable or better recall, and are the only scorer family that retains usable recall on \textsc{MIMIC-CXR} radiology reports (83\% / 59\% factuality / omission recall for \textsc{GPT-5-mini}, vs.\ 53--60\% / 38--43\% for external scorers).}
+\label{tab:external-scorers-efficiency}
+\begin{tabular}{lll rr rr}
+\toprule
+ & & & \multicolumn{2}{c}{Factuality} & \multicolumn{2}{c}{Omission} \\
+\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+Dataset & Type & Scorer & Flagged & Rec\% & Flagged & Rec\% \\
+\midrule
+  \multirow{5}{*}{\textbf{ACI-Bench}} & \multirow{2}{*}{LLM} & \textbf{GPT-5-mini} & \textbf{3.7} (13.7\%) & \textbf{87.5} & \textbf{9.8} (18.9\%) & \textbf{75.3} \\
+   &  & Gemini 2.5 Pro & 11.9 (37.8\%) & 95.1 & 10.2 (19.5\%) & 67.6 \\
+\addlinespace[2pt]
+   & \multirow{3}{*}{External} & NLI (DeBERTa) & 13.0 (48.3\%) & 86.9 & 23.2 (45.2\%) & 75.1 \\
+   &  & Embed (BERT) & 23.2 (86.0\%) & 89.6 & 23.9 (46.6\%) & 76.4 \\
+   &  & AlignScore & 17.8 (66.3\%) & 85.9 & 21.5 (41.8\%) & 71.8 \\
+\midrule
+  \multirow{5}{*}{\textbf{MIMIC-BHC}} & \multirow{2}{*}{LLM} & \textbf{GPT-5-mini} & \textbf{2.3} (13.5\%) & \textbf{85.7} & \textbf{66.3} (57.5\%) & \textbf{86.5} \\
+   &  & Gemini 2.5 Pro & 6.9 (36.8\%) & 94.5 & 69.6 (60.4\%) & 85.6 \\
+\addlinespace[2pt]
+   & \multirow{3}{*}{External} & NLI (DeBERTa) & 10.4 (61.2\%) & 81.2 & 83.6 (72.5\%) & 84.6 \\
+   &  & Embed (BERT) & 14.5 (84.8\%) & 87.1 & 84.8 (73.5\%) & 87.5 \\
+   &  & AlignScore & 10.0 (58.7\%) & 82.2 & 75.5 (65.5\%) & 86.0 \\
+\midrule
+  \multirow{4}{*}{\textbf{MIMIC-CXR}} & LLM & \textbf{GPT-5-mini} & \textbf{1.2} (24.4\%) & \textbf{82.9} & \textbf{0.9} (11.4\%) & \textbf{58.8} \\
+\addlinespace[2pt]
+   & \multirow{3}{*}{External} & NLI (DeBERTa) & 2.1 (40.2\%) & 58.4 & 2.1 (25.9\%) & 40.2 \\
+   &  & Embed (BERT) & 2.2 (44.1\%) & 59.5 & 3.1 (38.5\%) & 43.4 \\
+   &  & AlignScore & 1.8 (34.9\%) & 52.9 & 1.4 (17.3\%) & 38.0 \\
+\midrule
+  \multirow{4}{*}{\textbf{Priv-DS}} & LLM & \textbf{GPT-5-mini} & \textbf{8.1} (22.6\%) & \textbf{94.9} & \textbf{219.0} (61.0\%) & \textbf{88.6} \\
+\addlinespace[2pt]
+   & \multirow{3}{*}{External} & NLI (DeBERTa) & 26.6 (74.2\%) & 95.1 & 243.0 (67.9\%) & 86.3 \\
+   &  & Embed (BERT) & 34.0 (94.9\%) & 95.0 & 243.8 (68.1\%) & 86.5 \\
+   &  & AlignScore & 27.5 (76.8\%) & 95.0 & 234.6 (65.5\%) & 86.5 \\
+\midrule
+  \multirow{4}{*}{\textbf{SumPubMed}} & LLM & \textbf{GPT-5-mini} & \textbf{1.0} (7.7\%) & \textbf{86.2} & \textbf{112.1} (66.2\%) & \textbf{87.2} \\
+\addlinespace[2pt]
+   & \multirow{3}{*}{External} & NLI (DeBERTa) & 6.5 (49.3\%) & 76.2 & 134.4 (79.5\%) & 91.4 \\
+   &  & Embed (BERT) & 7.2 (55.1\%) & 71.3 & 134.9 (79.8\%) & 92.1 \\
+   &  & AlignScore & 2.6 (20.2\%) & 65.4 & 120.0 (70.9\%) & 85.4 \\
+\bottomrule
+\end{tabular}
+\end{table}

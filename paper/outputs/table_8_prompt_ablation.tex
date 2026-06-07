@@ -1,0 +1,29 @@
+\begin{table}[h]
+\centering
+\small
+\caption{Prompt ablation at $\alpha=0.15$, averaged over 100 random 70/30 cal/test resplits. \emph{V\%}: violation rate with 95\% bootstrap CI on the mean across resplits. \emph{Fl\%}: flagged sentences (\% of total). CRC guarantees hold under both prompt styles across all datasets.}
+\label{tab:prompt-ablation}
+\resizebox{\columnwidth}{!}{
+\begin{tabular}{ll rr rr}
+\toprule
+& & \multicolumn{2}{c}{Hallucination} & \multicolumn{2}{c}{Omission} \\
+\cmidrule(lr){3-4} \cmidrule(lr){5-6}
+Dataset & Prompt & V\% & Fl\% & V\% & Fl\% \\
+\midrule
+ACI-Bench & Generic & 12.2 {\tiny [10.9,13.4]} & 13.7 & 14.0 {\tiny [12.9,15.2]} & 18.9 \\
+ & Domain & 13.2 {\tiny [11.9,14.5]} & 11.2 & 14.1 {\tiny [13.0,15.2]} & 21.0 \\
+\midrule
+MIMIC-BHC & Generic & 12.5 {\tiny [12.1,13.0]} & 13.5 & 13.7 {\tiny [13.5,13.8]} & 57.5 \\
+ & Domain & 12.8 {\tiny [12.2,13.3]} & 11.3 & 13.3 {\tiny [13.1,13.5]} & 57.7 \\
+\midrule
+MIMIC-CXR & Generic & 5.7 {\tiny [5.4,6.0]} & 24.4 & 9.3 {\tiny [8.9,9.7]} & 11.4 \\
+ & Domain & 7.6 {\tiny [7.2,8.0]} & 20.9 & 13.8 {\tiny [12.6,14.9]} & 9.2 \\
+\midrule
+Priv-DS & Generic & 12.8 {\tiny [12.1,13.5]} & 22.6 & 11.7 {\tiny [11.6,11.8]} & 61.0 \\
+ & Domain & 12.7 {\tiny [12.3,13.2]} & 21.9 & 13.2 {\tiny [13.1,13.3]} & 58.8 \\
+\midrule
+SumPubMed & Generic & 6.8 {\tiny [6.5,7.1]} & 7.7 & 12.5 {\tiny [12.2,12.9]} & 66.2 \\
+ & Domain & 13.3 {\tiny [12.6,14.0]} & 7.5 & 13.4 {\tiny [13.2,13.5]} & 62.9 \\
+\bottomrule
+\end{tabular}}
+\end{table}

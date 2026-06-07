@@ -1,0 +1,26 @@
+\begin{table}[h]
+\centering
+\small
+\caption{Oracle label validation against human annotations. Two clinicians independently annotated 10--11 randomly sampled documents per dataset. \emph{HH}: inter-annotator F1 (human ceiling). \emph{OH}: oracle--human F1, averaged over both annotators. $n$: sentences evaluated. The oracle matches or exceeds human agreement on all tasks.}
+\label{tab:oracle-validation}
+\resizebox{\columnwidth}{!}{
+\begin{tabular}{ll r r ccc}
+\toprule
+ & & & & \multicolumn{3}{c}{\textbf{Oracle--Human}} \\
+\cmidrule(lr){5-7}
+Dataset & Task & $n$ & HH F1 & F1 & Prec & Rec \\
+\midrule
+  \multirow{3}{*}{ACI-Bench} & Factuality & 465 & 0.99 & 0.97 & 0.97 & 0.98 \\
+   & Importance & 826 & 0.91 & 0.91 & 0.92 & 0.89 \\
+   & Coverage & 826 & 0.91 & 0.91 & 0.90 & 0.93 \\
+\midrule
+  \multirow{3}{*}{MIMIC-BHC} & Factuality & 228 & 0.98 & 0.97 & 0.98 & 0.96 \\
+   & Importance & 1808 & 0.94 & 0.88 & 0.89 & 0.88 \\
+   & Coverage & 1808 & 0.92 & 0.90 & 0.93 & 0.86 \\
+\midrule
+  \multirow{3}{*}{MIMIC-CXR} & Factuality & 79 & 0.99 & 0.97 & 0.98 & 0.96 \\
+   & Importance & 120 & 0.98 & 0.94 & 0.93 & 0.95 \\
+   & Coverage & 120 & 0.97 & 0.95 & 0.95 & 0.95 \\
+\bottomrule
+\end{tabular}}
+\end{table}

@@ -1,0 +1,20 @@
+\begin{table}[h]
+\centering
+\tiny
+\caption{LTT-FST versus the unconstrained workload-minimizing comparator at $\alpha=0.15$, averaged over 100 random 70/30 calibration/test resplits per dataset. LTT-FST follows a pre-specified ordering and carries the fixed-sequence guarantee; the comparator minimizes workload over the empirical feasible set without an explicit multiple-testing correction. Ratio denotes LTT-FST workload divided by comparator workload. Brackets denote a 95\% bootstrap CI on the mean violation rate across resplits.}
+\label{tab:fst-vs-2djoint}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{l cc cc r}
+\toprule
+ & \multicolumn{2}{c}{\textbf{LTT-FST}} & \multicolumn{2}{c}{\textbf{2D Joint (comparator)}} & \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+Dataset & V\% [95\% CI] & WL & V\% [95\% CI] & WL & Ratio \\
+\midrule
+ACI-Bench  & 14.0 [12.9, 15.2]  &   9.8 & 15.0 [13.8, 16.3]  &   9.6 & 1.02$\times$ \\
+MIMIC-BHC  & 13.7 [13.5, 13.8]  &  66.3 & 13.9 [13.7, 14.2]  &  65.9 & 1.01$\times$ \\
+MIMIC-CXR  & 9.3 [8.9, 9.7]     &   0.9 & 11.6 [10.7, 12.6]  &   0.8 & 1.09$\times$ \\
+Priv-DS    & 11.7 [11.6, 11.8]  & 219.0 & 11.7 [11.6, 11.8]  & 219.0 & 1.00$\times$ \\
+SumPubMed  & 12.5 [12.2, 12.9]  & 112.1 & 12.5 [12.2, 12.9]  & 112.1 & 1.00$\times$ \\
+\bottomrule
+\end{tabular}}
+\end{table}

@@ -1,0 +1,164 @@
+{
+  "alpha": 0.15,
+  "n_resplits": 100,
+  "ordering": "tau_plus_gamma",
+  "cross_dataset": {
+    "ACI_Bench": {
+      "ACI_Bench": {
+        "violation": 0.1336906906906907
+      },
+      "MIMIC_IV_BHC": {
+        "violation": 0.16965986990974727
+      },
+      "MIMIC_III_CXR": {
+        "violation": 0.01062222222222222
+      },
+      "OMOP": {
+        "violation": 0.10410318009099194
+      },
+      "SumPubMed": {
+        "violation": 0.12335494167353582
+      }
+    },
+    "MIMIC_IV_BHC": {
+      "ACI_Bench": {
+        "violation": 0.13930555555555554
+      },
+      "MIMIC_IV_BHC": {
+        "violation": 0.1362859636325229
+      },
+      "MIMIC_III_CXR": {
+        "violation": 0.020827777777777775
+      },
+      "OMOP": {
+        "violation": 0.09160412515343883
+      },
+      "SumPubMed": {
+        "violation": 0.1341204070006466
+      }
+    },
+    "MIMIC_III_CXR": {
+      "ACI_Bench": {
+        "violation": 0.2717582582582583
+      },
+      "MIMIC_IV_BHC": {
+        "violation": 0.628977987998932
+      },
+      "MIMIC_III_CXR": {
+        "violation": 0.09307777777777776
+      },
+      "OMOP": {
+        "violation": 0.5051576726129337
+      },
+      "SumPubMed": {
+        "violation": 0.5645982720750683
+      }
+    },
+    "OMOP": {
+      "ACI_Bench": {
+        "violation": 0.15431306306306306
+      },
+      "MIMIC_IV_BHC": {
+        "violation": 0.18612930453928528
+      },
+      "MIMIC_III_CXR": {
+        "violation": 0.02271111111111111
+      },
+      "OMOP": {
+        "violation": 0.11664953763475984
+      },
+      "SumPubMed": {
+        "violation": 0.15095281545916486
+      }
+    },
+    "SumPubMed": {
+      "ACI_Bench": {
+        "violation": 0.1285135135135135
+      },
+      "MIMIC_IV_BHC": {
+        "violation": 0.1745724860773412
+      },
+      "MIMIC_III_CXR": {
+        "violation": 0.009861111111111109
+      },
+      "OMOP": {
+        "violation": 0.10485101357999578
+      },
+      "SumPubMed": {
+        "violation": 0.12290471109567208
+      }
+    }
+  },
+  "length_shift": {
+    "ACI_Bench": {
+      "short\u2192long": {
+        "omit_violation": 0.20297849462365591,
+        "fact_violation": 0.11387096774193547
+      },
+      "long\u2192short": {
+        "omit_violation": 0.09106557377049182,
+        "fact_violation": 0.12196721311475411
+      },
+      "random\u2192random": {
+        "omit_violation": 0.13384609609609613,
+        "fact_violation": 0.12378378378378381
+      }
+    },
+    "MIMIC_IV_BHC": {
+      "short\u2192long": {
+        "omit_violation": 0.13180124137778854,
+        "fact_violation": 0.14611999999999997
+      },
+      "long\u2192short": {
+        "omit_violation": 0.13752055266203156,
+        "fact_violation": 0.10520000000000002
+      },
+      "random\u2192random": {
+        "omit_violation": 0.13439581817208957,
+        "fact_violation": 0.12746666666666667
+      }
+    },
+    "MIMIC_III_CXR": {
+      "short\u2192long": {
+        "omit_violation": 0.13939333333333337,
+        "fact_violation": 0.05199999999999999
+      },
+      "long\u2192short": {
+        "omit_violation": 0.07999999999999999,
+        "fact_violation": 0.06400000000000002
+      },
+      "random\u2192random": {
+        "omit_violation": 0.09273333333333333,
+        "fact_violation": 0.05919999999999999
+      }
+    },
+    "OMOP": {
+      "short\u2192long": {
+        "omit_violation": 0.11249001543026893,
+        "fact_violation": 0.17488000000000006
+      },
+      "long\u2192short": {
+        "omit_violation": 0.12062541932112644,
+        "fact_violation": 0.08487999999999996
+      },
+      "random\u2192random": {
+        "omit_violation": 0.11777650760351566,
+        "fact_violation": 0.12706666666666666
+      }
+    },
+    "SumPubMed": {
+      "short\u2192long": {
+        "omit_violation": 0.1642430593150167,
+        "fact_violation": 0.07999999999999999
+      },
+      "long\u2192short": {
+        "omit_violation": 0.10962953554966086,
+        "fact_violation": 0.06867999999999999
+      },
+      "random\u2192random": {
+        "omit_violation": 0.12645597983102305,
+        "fact_violation": 0.06913333333333332
+      }
+    }
+  }
+}

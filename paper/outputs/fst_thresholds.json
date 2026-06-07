@@ -1,0 +1,57 @@
+{
+  "ACI_Bench": {
+    "lambda": 0.7000000000000001,
+    "tau": 0.5,
+    "gamma": 0.30000000000000004,
+    "n_cal": 86,
+    "adjusted_risk": 0.14795657726692207,
+    "workload": 10.616279069767442,
+    "is_feasible": true,
+    "alpha": 0.15,
+    "method": "omission_fst_tau_plus_gamma"
+  },
+  "MIMIC_IV_BHC": {
+    "lambda": 0.6,
+    "tau": 0.4,
+    "gamma": 0.5,
+    "n_cal": 350,
+    "adjusted_risk": 0.14239991314427802,
+    "workload": 65.58857142857143,
+    "is_feasible": true,
+    "alpha": 0.15,
+    "method": "omission_fst_tau_plus_gamma"
+  },
+  "MIMIC_III_CXR": {
+    "lambda": 0.5,
+    "tau": 1.0,
+    "gamma": 0.5,
+    "n_cal": 350,
+    "adjusted_risk": 0.09449192782526114,
+    "workload": 0.92,
+    "is_feasible": true,
+    "alpha": 0.15,
+    "method": "omission_fst_tau_plus_gamma"
+  },
+  "OMOP": {
+    "lambda": 0.8,
+    "tau": 0.5,
+    "gamma": 0.5,
+    "n_cal": 350,
+    "adjusted_risk": 0.12194739897510254,
+    "workload": 217.24285714285713,
+    "is_feasible": true,
+    "alpha": 0.15,
+    "method": "omission_fst_tau_plus_gamma"
+  },
+  "SumPubMed": {
+    "lambda": 0.5,
+    "tau": 0.5,
+    "gamma": 0.4,
+    "n_cal": 350,
+    "adjusted_risk": 0.12509849884218838,
+    "workload": 114.27714285714286,
+    "is_feasible": true,
+    "alpha": 0.15,
+    "method": "omission_fst_tau_plus_gamma"
+  }
+}

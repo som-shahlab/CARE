@@ -1,0 +1,74 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env
+.venv
+env/
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Data
+data/
+
+# ignore Streamlit app for now
+apps/visualization/*
+
+# Paper source (kept locally, not pushed to repo)
+paper/source/
+
+# Clinician study (may contain PHI)
+paper/clinician_study/
+
+# Rebuttal / review-response material (kept locally, not part of reproduction)
+paper/rebuttal/
+
+# Vendored AlignScore checkout (~1.9GB model checkpoint; install separately, see README)
+AlignScore/
+
+# Claude Code local settings / scratch
+.claude/
+
+# Scratch / rebuttal analysis outputs (not part of the reproducible pipeline)
+paper/outputs/fst_smoketest_results.json
+paper/outputs/care_error_analysis.json
+paper/outputs/2djoint_distribution_shift.json
+paper/outputs/fst_phase0_validation_summary.md
+paper/outputs/fst_rescore_clinician_summary.md
+
+# PHI-derived aggregate outputs (computed from the clinician study; kept local)
+paper/outputs/clinician_summary_quality.json
+paper/outputs/fst_rescore_clinician.json
+paper/outputs/oracle_validation_stratified.json
+
+# Scratch / rebuttal scripts not wired into reproduce.sh
+paper/scripts/compute_care_error_analysis.py
+paper/scripts/compute_2djoint_distribution_shift.py
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# shell scripts
+slurm/*

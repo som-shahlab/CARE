@@ -1,0 +1,19 @@
+\begin{table}[h]
+\centering
+\small
+\caption{LLM judge self-consistency across $m{=}5$ vote replicates. We report Fleiss' $\kappa$ and unanimity rate (\% of sentences where all 5 votes agree) for each annotation task.}
+\label{tab:judge-variance}
+\begin{tabular}{l cc cc cc}
+\toprule
+ & \multicolumn{2}{c}{Factuality} & \multicolumn{2}{c}{Importance} & \multicolumn{2}{c}{Coverage} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7}
+Dataset & $\kappa$ & Unan.\% & $\kappa$ & Unan.\% & $\kappa$ & Unan.\% \\
+\midrule
+  ACI-Bench & 0.82 & 90 & 0.78 & 73 & 0.78 & 74 \\
+  MIMIC-BHC & 0.76 & 87 & 0.71 & 63 & 0.85 & 83 \\
+  MIMIC-CXR & 0.82 & 84 & 0.74 & 77 & 0.90 & 90 \\
+  Priv-DS & 0.80 & 86 & 0.74 & 66 & 0.83 & 81 \\
+  SumPubMed & 0.77 & 90 & 0.75 & 69 & 0.78 & 75 \\
+\bottomrule
+\end{tabular}
+\end{table}

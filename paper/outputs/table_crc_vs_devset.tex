@@ -1,0 +1,22 @@
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\caption{Omission risk violation rate at $\alpha = 0.15$ for \textsc{Care} (LTT-FST with the finite-sample correction) versus \textbf{dev-set tuning} (the identical FST ordering but stopping at the first cell whose \emph{raw} empirical loss $\le\alpha$, i.e.\ without the $\frac{n}{n{+}1}$ correction). Means are computed over 20 random subsamples of size $n$ from each dataset. Dev-set tuning violates the target on multiple ACI-Bench cells and on MIMIC-CXR at small $n$; \textsc{Care} is valid at every cell except a single marginal ACI-Bench point ($n{=}50$, $16.2\%$), within Monte-Carlo noise of 20 repeats on the smallest dataset. The two methods converge as $n$ grows and the finite-sample correction shrinks.}
+\label{tab:crc-vs-devset}
+\begin{tabular}{c cc cc cc cc cc }
+\toprule
+$n$ & \multicolumn{2}{c}{ACI} & \multicolumn{2}{c}{BHC} & \multicolumn{2}{c}{CXR} & \multicolumn{2}{c}{Priv-DS} & \multicolumn{2}{c}{PubMed} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}\cmidrule(lr){8-9}\cmidrule(lr){10-11}
+ & \textsc{Care} & Dev & \textsc{Care} & Dev & \textsc{Care} & Dev & \textsc{Care} & Dev & \textsc{Care} & Dev \\
+\midrule
+15 & 14.4 & \textbf{19.6}$^\dagger$ & 8.7 & 13.5 & 12.2 & 14.5 & 8.6 & 11.4 & 9.9 & 13.0 \\
+25 & 11.1 & 13.3 & 10.7 & 14.2 & 11.3 & 15.0 & 10.6 & 11.6 & 11.3 & 13.5 \\
+50 & 16.2$^\dagger$ & \textbf{18.3}$^\dagger$ & 12.1 & 13.2 & 12.7 & 13.9 & 11.6 & 11.6 & 11.9 & 13.2 \\
+75 & 14.4 & \textbf{15.4}$^\dagger$ & 12.7 & 13.2 & 10.9 & 10.9 & 11.5 & 11.5 & 12.1 & 12.9 \\
+100 & -- & -- & 13.2 & 14.0 & 11.0 & 11.1 & 11.6 & 11.6 & 12.5 & 13.9 \\
+\bottomrule
+\end{tabular}
+\vspace{2pt}
+\par\small $^\dagger$Exceeds $\alpha=0.15$.
+\end{table}

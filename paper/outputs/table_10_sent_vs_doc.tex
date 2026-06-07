@@ -1,0 +1,15 @@
+\begin{table}[h]
+\centering
+\small
+\caption{Sentence- vs.\ document-level hallucination control. \emph{Action}: what happens when an error is detected. \emph{Rej./Flag}: fraction of documents rejected or sentences flagged (range across datasets). Document-level abstention either rejects too aggressively or violates guarantees.}
+\label{tab:sent-vs-doc}
+\begin{tabular}{l l c r}
+\toprule
+Method & Action & Valid? & Rej./Flag \\
+\midrule
+Doc ($\min \phat_\mathrm{f}$) & Reject doc & \cmark & 33--95\% \\
+Doc ($\mathrm{mean}\;\phat_\mathrm{f}$) & Reject doc & \xmark & 29--80\% \\
+\textbf{Ours (sent.)} & Flag sent. & \cmark & 8--24\% \\
+\bottomrule
+\end{tabular}
+\end{table}

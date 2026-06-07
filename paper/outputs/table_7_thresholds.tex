@@ -1,0 +1,17 @@
+\begin{table}[h]
+\centering
+\small
+\caption{Calibrated thresholds at $\alpha=0.15$. $\lambda^*$: hallucination flagging threshold (flag if $\phat_{\mathrm{fact}} \le \lambda^*$). $\tau^*$: importance gate (surface if $\phat_{\mathrm{imp}} \ge \tau^*$). $\gamma^*$: non-coverage gate (surface if $1 - \phat_{\mathrm{cov}} \ge \gamma^*$).}
+\label{tab:thresholds}
+\begin{tabular}{l ccc}
+\toprule
+Dataset & $\lambda^*$ & $\tau^*$ & $\gamma^*$ \\
+\midrule
+ACI-Bench      & 0.70 & 0.50 & 0.30 \\
+MIMIC-BHC      & 0.60 & 0.40 & 0.50 \\
+MIMIC-CXR      & 0.50 & 1.00 & 0.50 \\
+Priv-DS        & 0.80 & 0.50 & 0.50 \\
+SumPubMed      & 0.50 & 0.50 & 0.40 \\
+\bottomrule
+\end{tabular}
+\end{table}

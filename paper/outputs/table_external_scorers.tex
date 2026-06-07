@@ -1,0 +1,34 @@
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\caption{Scorer-agnostic risk control ($\alpha = 0.15$, fractional omission loss, 100 random 70/30 cal/test resplits). The LLM-judge Phase 2 factuality and coverage signals are replaced by the three canonical external scorer families from the faithfulness-evaluation literature: NLI (\textsc{DeBERTa-v3} cross-encoder, \textsc{SummaC}-style), embedding cosine (\textsc{BERT-base}, \textsc{BERTScore}-style), and \textsc{AlignScore}. Importance is held fixed at the LLM-judge signal. Each cell shows mean V\% $\pm$ half-width of a 95\% normal-approximation CI on the resplit mean ($1.96 \cdot \text{SD}/\sqrt{100}$). $\dagger$ marks cells whose CI lies entirely above $\alpha$ at display precision. \textsc{Care} preserves $\alpha$-validity marginally (mean $V=13.3\%$ across all 30 cells), consistent with CRC's finite-sample guarantee being marginal over (calibration, test) draws \citep{angelopoulos-crc-2024}. Per-cell realizations fluctuate around $\alpha$ as predicted by the Beta distribution of per-calibration coverage; the largest realization at $V=15.7\%$ (\textsc{AlignScore} $\times$ Omit on ACI-Bench) lies well within one standard deviation ($\sqrt{\alpha(1-\alpha)/n_{\mathrm{cal}}} \approx 3.9$\,pp at $n_{\mathrm{cal}}=86$) of $\alpha$. Max-F1 thresholding (the standard empirical operating point, oracle F1-optimal on cal using labels, ignores $\alpha$) significantly violates on 22/30 cells, with factuality violation up to 71\% on Priv-DS.}
+\label{tab:external-scorers}
+\begin{tabular}{ll rr rr}
+\toprule
+ & & \multicolumn{2}{c}{Factuality V\%} & \multicolumn{2}{c}{Omission V\%} \\
+\cmidrule(lr){3-4}\cmidrule(lr){5-6}
+Dataset & Scorer & \textsc{Care} & Max-F1 & \textsc{Care} & Max-F1 \\
+\midrule
+ACI-Bench & NLI (DeBERTa) & 15.9{\scriptsize $\pm$1.4} & \textbf{28.9}$^\dagger${\scriptsize $\pm$1.4} & 14.3{\scriptsize $\pm$0.9} & \textbf{25.0}$^\dagger${\scriptsize $\pm$1.3} \\
+ & Embed (BERT) & 11.2{\scriptsize $\pm$1.4} & \textbf{26.1}$^\dagger${\scriptsize $\pm$4.1} & 13.7{\scriptsize $\pm$1.4} & \textbf{28.7}$^\dagger${\scriptsize $\pm$1.5} \\
+ & AlignScore & 14.8{\scriptsize $\pm$1.3} & \textbf{49.5}$^\dagger${\scriptsize $\pm$1.9} & 15.7{\scriptsize $\pm$1.1} & \textbf{36.5}$^\dagger${\scriptsize $\pm$1.3} \\
+\midrule
+MIMIC-BHC & NLI (DeBERTa) & 15.2{\scriptsize $\pm$0.6} & \textbf{18.5}$^\dagger${\scriptsize $\pm$1.7} & 14.4{\scriptsize $\pm$0.4} & \textbf{39.3}$^\dagger${\scriptsize $\pm$0.3} \\
+ & Embed (BERT) & 11.0{\scriptsize $\pm$0.4} & 11.9{\scriptsize $\pm$2.4} & 11.9{\scriptsize $\pm$0.6} & \textbf{37.0}$^\dagger${\scriptsize $\pm$0.3} \\
+ & AlignScore & 15.0{\scriptsize $\pm$0.7} & \textbf{39.5}$^\dagger${\scriptsize $\pm$0.9} & 14.1{\scriptsize $\pm$0.3} & \textbf{43.4}$^\dagger${\scriptsize $\pm$0.6} \\
+\midrule
+MIMIC-CXR & NLI (DeBERTa) & 13.6{\scriptsize $\pm$0.7} & 9.5{\scriptsize $\pm$1.0} & 13.9{\scriptsize $\pm$0.5} & 9.7{\scriptsize $\pm$0.5} \\
+ & Embed (BERT) & 13.6{\scriptsize $\pm$0.6} & 15.4{\scriptsize $\pm$0.7} & 12.9{\scriptsize $\pm$0.6} & 9.7{\scriptsize $\pm$1.4} \\
+ & AlignScore & 15.0{\scriptsize $\pm$0.7} & 13.2{\scriptsize $\pm$0.8} & 14.3{\scriptsize $\pm$0.6} & \textbf{16.4}$^\dagger${\scriptsize $\pm$0.7} \\
+\midrule
+Priv-DS & NLI (DeBERTa) & 13.1{\scriptsize $\pm$0.4} & \textbf{67.1}$^\dagger${\scriptsize $\pm$0.6} & 14.1{\scriptsize $\pm$0.2} & \textbf{26.0}$^\dagger${\scriptsize $\pm$0.2} \\
+ & Embed (BERT) & 11.6{\scriptsize $\pm$0.4} & 4.1{\scriptsize $\pm$0.3} & 14.1{\scriptsize $\pm$0.2} & \textbf{25.0}$^\dagger${\scriptsize $\pm$0.2} \\
+ & AlignScore & 13.8{\scriptsize $\pm$0.6} & \textbf{71.3}$^\dagger${\scriptsize $\pm$0.7} & 13.6{\scriptsize $\pm$0.1} & \textbf{27.6}$^\dagger${\scriptsize $\pm$0.2} \\
+\midrule
+SumPubMed & NLI (DeBERTa) & 9.7{\scriptsize $\pm$0.4} & 9.7{\scriptsize $\pm$0.4} & 8.0{\scriptsize $\pm$0.1} & \textbf{39.3}$^\dagger${\scriptsize $\pm$0.5} \\
+ & Embed (BERT) & 12.9{\scriptsize $\pm$0.5} & \textbf{26.5}$^\dagger${\scriptsize $\pm$2.2} & 7.4{\scriptsize $\pm$0.1} & \textbf{38.8}$^\dagger${\scriptsize $\pm$0.5} \\
+ & AlignScore & 15.1{\scriptsize $\pm$0.7} & \textbf{27.5}$^\dagger${\scriptsize $\pm$0.8} & 14.2{\scriptsize $\pm$0.3} & \textbf{43.4}$^\dagger${\scriptsize $\pm$0.6} \\
+\bottomrule
+\end{tabular}
+\end{table}

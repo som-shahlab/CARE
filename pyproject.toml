@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "care"
+version = "0.1.0"
+description = "CARE: Conformal Assessment for Risk Evaluation for medical summarization"
+requires-python = ">=3.8"
+# Core runtime: the `care` pipeline + the main paper tables/figures.
+dependencies = [
+    "numpy>=1.24",
+    "pandas>=2.0",
+    "matplotlib>=3.7",
+    "openai>=1.0",
+    "requests>=2.31",
+    "tqdm>=4.66",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+# Non-LLM external scorers (NLI/BERTScore/AlignScore) and the token/cost table.
+# GPU recommended. AlignScore weights are installed separately (see README).
+scorers = [
+    "torch",
+    "transformers",
+    "tiktoken",
+    "nltk",
+    "bert-score",
+    "scikit-learn",
+    "scipy",
+]
+
+[tool.setuptools.packages.find]
+include = ["care*"]

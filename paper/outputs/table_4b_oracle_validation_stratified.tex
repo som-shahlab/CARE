@@ -1,0 +1,24 @@
+\begin{table}[h]
+\centering
+\small
+\caption{Stratified oracle validation. Each F1 cell shows \emph{original / hard}: \emph{original} is computed on the uniform sample of annotated sentences, \emph{hard} on a hard-heavy bootstrap ($N{=}1000$, 50\% drawn from sentences where the 5-replicate judge ensemble was non-unanimous, $\hat p \notin \{0, 1\}$). \emph{Oracle F1} is oracle vs.\ human annotators; \emph{Human F1} is the inter-annotator ceiling; \emph{Gap} is Human F1 $-$ Oracle F1. $\Delta\mathrm{gap}$ is the change in this gap from original to hard, near zero indicating the oracle drops no faster than the human ceiling on harder content ($|\Delta\mathrm{gap}|\!\le\!0.04$ on every cell).}
+\label{tab:oracle-validation-stratified}
+\begin{tabular}{ll ccc r}
+\toprule
+Dataset & Task & Oracle F1 & Human F1 & Gap & $\Delta\mathrm{gap}$ \\
+ & & \emph{(orig / hard)} & \emph{(orig / hard)} & \emph{(orig / hard)} & \\
+\midrule
+  ACI-Bench & Factuality & 0.98 / 0.95 & 0.99 / 0.98 & 0.01 / 0.04 & +0.02 \\
+   & Importance & 0.91 / 0.89 & 0.91 / 0.89 & 0.00 / 0.01 & +0.00 \\
+   & Coverage & 0.91 / 0.90 & 0.91 / 0.91 & 0.00 / 0.01 & +0.01 \\
+\midrule
+  MIMIC-BHC & Factuality & 0.97 / 0.94 & 0.98 / 0.95 & 0.00 / 0.01 & +0.01 \\
+   & Importance & 0.88 / 0.89 & 0.93 / 0.94 & 0.05 / 0.05 & -0.00 \\
+   & Coverage & 0.90 / 0.87 & 0.91 / 0.90 & 0.02 / 0.03 & +0.02 \\
+\midrule
+  MIMIC-CXR & Factuality & 0.97 / 0.96 & 0.99 / 0.99 & 0.02 / 0.02 & +0.00 \\
+   & Importance & 0.94 / 0.93 & 0.98 / 0.98 & 0.04 / 0.04 & -0.00 \\
+   & Coverage & 0.95 / 0.92 & 0.97 / 0.96 & 0.02 / 0.04 & +0.03 \\
+\bottomrule
+\end{tabular}
+\end{table}

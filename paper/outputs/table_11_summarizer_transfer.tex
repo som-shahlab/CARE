@@ -1,0 +1,26 @@
+\begin{table}[h]
+\centering
+\small
+\caption{Summarizer transfer at $\alpha=0.15$ (omission controller: LTT-FST), averaged over 100 random 70/30 resplits. Mean violation tracks $\alpha$ for all three summarizers across both controllers; \textsc{Care} adapts its operating point to each summarizer's error profile through recalibration. Brackets denote a 95\% bootstrap CI on the mean violation rate across resplits.}
+\label{tab:summarizer-transfer}
+\resizebox{\columnwidth}{!}{
+\begin{tabular}{ll ccc ccc}
+\toprule
+& & \multicolumn{3}{c}{\textbf{Hallucination}} & \multicolumn{3}{c}{\textbf{Omission}} \\
+\cmidrule(lr){3-5} \cmidrule(lr){6-8}
+Dataset & Summarizer & Viol.\% & Fl\% & Recall\% & Viol.\% & Fl\% & Recall\% \\
+\midrule
+\multirow{3}{*}{ACI-Bench}
+& Llama-3.3-70B & 12.2{\tiny [10.9,13.4]} & 13.7 & 87.5 & 14.0{\tiny [12.9,15.2]} & 18.9 & 75.3 \\
+\rowcolor{gray!6}
+& Gemini 2.5 Pro & 13.4{\tiny [12.2,14.6]} & 37.8 & 95.1 & 14.9{\tiny [13.6,16.2]} & 23.9 & 67.7 \\
+& Claude Opus 4 & 13.5{\tiny [12.2,14.9]} & 15.6 & 90.4 & 15.9{\tiny [14.9,17.0]} & 25.2 & 75.9 \\
+\midrule
+\multirow{3}{*}{MIMIC-BHC}
+& Llama-3.3-70B & 12.5{\tiny [12.1,13.0]} & 13.5 & 85.7 & 13.7{\tiny [13.5,13.8]} & 57.5 & 86.5 \\
+\rowcolor{gray!6}
+& Gemini 2.5 Pro & 12.3{\tiny [11.9,12.8]} & 36.8 & 94.5 & 14.0{\tiny [13.6,14.4]} & 60.8 & 86.0 \\
+& Claude Opus 4 & 12.9{\tiny [12.3,13.5]} & 15.1 & 86.9 & 12.0{\tiny [11.7,12.4]} & 59.0 & 87.9 \\
+\bottomrule
+\end{tabular}}
+\end{table}

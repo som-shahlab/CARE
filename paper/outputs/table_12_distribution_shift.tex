@@ -1,0 +1,39 @@
+\begin{table}[t]
+\centering
+\small
+\caption{Distribution shift experiments at $\alpha=0.15$, averaged over 100 random resplits. \textbf{(a)}~Cross-dataset threshold transfer: rows = calibration dataset, columns = test dataset. Diagonal (shaded) = in-distribution. \textbf{(b)}~Within-dataset length shift: calibrate on short documents, test on long (and vice versa).}
+\label{tab:distribution-shift}
+\vspace{4pt}
+\textbf{(a) Cross-dataset transfer (omission frac.\ violation \%)}
+\vspace{2pt}
+\begin{tabular}{l ccccc}
+\toprule
+Cal $\backslash$ Test & ACI & BHC & CXR & Priv-DS & PubMed \\
+\midrule
+  ACI & \cellcolor{gray!20}\textbf{13.4} & 17.0$^\dagger$ & 1.1 & 10.4 & 12.3 \\
+  BHC & 13.9 & \cellcolor{gray!20}\textbf{13.6} & 2.1 & 9.2 & 13.4 \\
+  CXR & 27.2$^\dagger$ & 62.9$^\dagger$ & \cellcolor{gray!20}\textbf{9.3} & 50.5$^\dagger$ & 56.5$^\dagger$ \\
+  Priv-DS & 15.4$^\dagger$ & 18.6$^\dagger$ & 2.3 & \cellcolor{gray!20}\textbf{11.7} & 15.1$^\dagger$ \\
+  PubMed & 12.9 & 17.5$^\dagger$ & 1.0 & 10.5 & \cellcolor{gray!20}\textbf{12.3} \\
+\bottomrule
+\end{tabular}
+\vspace{8pt}
+
+\textbf{(b) Within-dataset length shift (violation \%)}
+\vspace{2pt}
+\begin{tabular}{l ccc ccc}
+\toprule
+ & \multicolumn{3}{c}{Factuality} & \multicolumn{3}{c}{Omission (frac.)} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7}
+Dataset & Short$\to$Long & Long$\to$Short & Random & Short$\to$Long & Long$\to$Short & Random \\
+\midrule
+  ACI & 11.4 & 12.2 & 12.4 & 20.3$^\dagger$ & 9.1 & 13.4 \\
+  BHC & 14.6 & 10.5 & 12.7 & 13.2 & 13.8 & 13.4 \\
+  CXR & 5.2 & 6.4 & 5.9 & 13.9 & 8.0 & 9.3 \\
+  Priv-DS & 17.5$^\dagger$ & 8.5 & 12.7 & 11.2 & 12.1 & 11.8 \\
+  PubMed & 8.0 & 6.9 & 6.9 & 16.4$^\dagger$ & 11.0 & 12.6 \\
+\bottomrule
+\end{tabular}
+\vspace{2pt}
+\par\small $^\dagger$Exceeds $\alpha=0.15$. Shaded = in-distribution (diagonal).
+\end{table}

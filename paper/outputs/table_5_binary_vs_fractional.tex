@@ -1,0 +1,38 @@
+\begin{table}[t]
+\centering
+\small
+\caption{Fractional vs.\ binary omission loss at $\alpha=0.15$. Point estimates are means over 100 random cal/test resplits. Fractional loss measures the mean fraction of true omissions missed per document; binary loss measures the fraction of documents with \emph{any} missed omission. All CRC methods achieve valid fractional coverage. Binary loss is substantially higher on high-compression datasets (BHC, PubMed), where documents have many true omissions.}
+\label{tab:binary-vs-fractional}
+\begin{tabular}{ll cc}
+\toprule
+Dataset & Method & Frac.\% & Binary\% \\
+\midrule
+  ACI-Bench & \textbf{LTT-FST} & \textbf{14.0} & 22.2$^\dagger$ \\
+   & 1D-Importance & 11.9 & 20.6$^\dagger$ \\
+   & Product & 14.1 & 22.2$^\dagger$ \\
+   & Union Bound & 11.3 & 19.8$^\dagger$ \\
+\midrule
+  MIMIC-BHC & \textbf{LTT-FST} & \textbf{13.7} & 74.3$^\dagger$ \\
+   & 1D-Importance & 11.9 & 65.7$^\dagger$ \\
+   & Product & 10.1 & 65.7$^\dagger$ \\
+   & Union Bound & 10.1 & 66.5$^\dagger$ \\
+\midrule
+  MIMIC-CXR & \textbf{LTT-FST} & \textbf{9.3} & 10.5 \\
+   & 1D-Importance & 7.6 & 8.5 \\
+   & Product & 5.6 & 6.5 \\
+   & Union Bound & 8.1 & 9.4 \\
+\midrule
+  Priv-DS & \textbf{LTT-FST} & \textbf{11.7} & 97.0$^\dagger$ \\
+   & 1D-Importance & 8.8 & 92.7$^\dagger$ \\
+   & Product & 13.0 & 96.3$^\dagger$ \\
+   & Union Bound & 9.2 & 95.3$^\dagger$ \\
+\midrule
+  SumPubMed & \textbf{LTT-FST} & \textbf{12.5} & 76.4$^\dagger$ \\
+   & 1D-Importance & 6.9 & 51.6$^\dagger$ \\
+   & Product & 10.1 & 69.1$^\dagger$ \\
+   & Union Bound & 11.9 & 75.1$^\dagger$ \\
+\bottomrule
+\end{tabular}
+\vspace{2pt}
+\par\small $^\dagger$Exceeds $\alpha=0.15$.
+\end{table}

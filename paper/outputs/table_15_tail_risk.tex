@@ -1,0 +1,17 @@
+\begin{table}[h]
+\centering
+\small
+\caption{Tail-risk diagnostics for the omission controller at $\alpha = 0.15$. Reports empirical percentiles of the per-document fractional omission loss, pooled across all 100 cal/test resplits and all test documents within each resplit (\emph{$n$} pooled observations). The mean is at or below $\alpha$ on every dataset, empirically validating CRC. The tail behavior splits by document structure: long-document datasets with many true omissions per document (BHC, Priv-DS, SumPubMed) show smooth tails with $P95$ of 0.25--0.40; short-document datasets with 1--2 true omissions per document (ACI-Bench, MIMIC-CXR) show bimodal tails because the fractional loss can only take a few discrete values---missing a single omission in a document with one true omission yields $L = 1$.}
+\label{tab:tail-risk}
+\begin{tabular}{l r r r r r r r}
+\toprule
+Dataset & $n$ & Mean & $P50$ & $P75$ & $P90$ & $P95$ & $P99$ \\
+\midrule
+  ACI-Bench & 3,700 & 0.140 & 0.000 & 0.000 & 0.625 & 1.000 & 1.000 \\
+  MIMIC-BHC & 15,000 & 0.137 & 0.111 & 0.200 & 0.333 & 0.400 & 0.667 \\
+  MIMIC-CXR & 15,000 & 0.093 & 0.000 & 0.000 & 0.500 & 1.000 & 1.000 \\
+  Priv-DS & 15,000 & 0.117 & 0.104 & 0.150 & 0.212 & 0.250 & 0.318 \\
+  SumPubMed & 15,000 & 0.125 & 0.100 & 0.182 & 0.286 & 0.360 & 0.533 \\
+\bottomrule
+\end{tabular}
+\end{table}
