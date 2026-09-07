@@ -2168,7 +2168,7 @@
       }
     ]
   },
-  "OMOP__generic": {
+  "PRIV_DS__generic": {
     "dataset": "Priv-DS",
     "n_total": 500,
     "summary": {
@@ -5783,7 +5783,7 @@
       }
     ]
   },
-  "OMOP__domain": {
+  "PRIV_DS__domain": {
     "dataset": "Priv-DS",
     "n_total": 500,
     "summary": {

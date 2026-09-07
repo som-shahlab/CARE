@@ -39,7 +39,7 @@ COLORS = {
 
 # Order panels left-to-right by document length / omission count, so the
 # bimodal-vs-smooth tail story reads naturally.
-PANEL_ORDER = ["MIMIC_III_CXR", "ACI_Bench", "MIMIC_IV_BHC", "OMOP", "SumPubMed"]
+PANEL_ORDER = ["MIMIC_III_CXR", "ACI_Bench", "MIMIC_IV_BHC", "PRIV_DS", "SumPubMed"]
 
 
 def omit_frac_loss_doc(doc, tau, gamma):

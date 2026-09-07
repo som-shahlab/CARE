@@ -31,7 +31,7 @@ OUT_PATH = OUTPUT_DIR / "fst_thresholds.json"
 
 
 def calibration_split_path(ds: str) -> Path:
-    """Canonical calibration split file (handles the nested OMOP layout)."""
+    """Canonical calibration split file (handles the nested PRIV_DS layout)."""
     flat = CANONICAL_DATA_ROOT / ds / "split" / "calibration.jsonl"
     if flat.exists():
         return flat

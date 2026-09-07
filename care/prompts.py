@@ -87,7 +87,7 @@ DOMAIN_SPECS: Dict[str, Dict[str, Any]] = {
         "templating_example": 'Standard scientific writing conventions (e.g., "further research is needed", "taken together, these results suggest")',
         "fabrication_examples": "fabricating experimental results, statistical values, or conclusions that don't appear",
     },
-    "omop": {
+    "privds": {
         "role": "clinician",
         "source_type": "clinical notes",
         "output_type": "discharge summary",
@@ -516,7 +516,7 @@ def get_custom_factuality_triage_system_prompt(dataset: str) -> str:
   omitting a key inflection point that changes clinical meaning,
   or numbers that contradict the sentence's own narrative.
 """
-    elif key == "omop":
+    elif key == "privds":
         fact_tiers = """
 - SUPPORTED:
   Faithful to the patient record in clinical meaning and timing.
@@ -612,7 +612,7 @@ Important:
   Background context, extended mechanistic detail,
   granular numbers, or discussion-level speculation.
 """
-    elif key == "omop":
+    elif key == "privds":
         importance_tiers = """
 - ESSENTIAL:
   Information required to understand the hospitalization:

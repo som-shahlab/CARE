@@ -37,7 +37,7 @@ from transformers import AutoTokenizer
 _DATASET_PROMPT_KEYS = {
     "MIMIC_IV_BHC":  "bhc",
     "ACI_Bench":     "aci",
-    "OMOP":          "omop",
+    "PRIV_DS":          "privds",
     "SumPubMed":     "pubmed",
     "MIMIC_III_CXR": "cxr",
 }

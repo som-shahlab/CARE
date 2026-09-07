@@ -60,7 +60,7 @@ DATASETS = {
     "ACI_Bench":     {"label": "ACI-Bench",  "short": "ACI"},
     "MIMIC_IV_BHC":  {"label": "MIMIC-BHC",  "short": "BHC"},
     "MIMIC_III_CXR": {"label": "MIMIC-CXR",  "short": "CXR"},
-    "OMOP":          {"label": "Priv-DS",     "short": "Priv-DS"},
+    "PRIV_DS":          {"label": "Priv-DS",     "short": "Priv-DS"},
     "SumPubMed":     {"label": "SumPubMed",   "short": "PubMed"},
 }
 
@@ -245,8 +245,8 @@ def configure_dataset(dataset: str):
         folder = "MIMIC_III_CXR"
     elif name in {"pubmed"}:
         folder = "SumPubMed"
-    elif name in {"omop", "priv-ds", "privds"}:
-        folder = "OMOP"
+    elif name in {"privds", "priv-ds", "privds"}:
+        folder = "PRIV_DS"
     else:
         raise ValueError(
             f"Unknown dataset={dataset}. Expected one of: aci, meq, bhc, cxr, pubmed, priv-ds"

@@ -2119,7 +2119,7 @@ def main():
     )
     parser.add_argument(
         '--dataset',
-        choices=["aci", "meq", "bhc", "cxr", "pubmed", "omop"],  # All datasets
+        choices=["aci", "meq", "bhc", "cxr", "pubmed", "privds"],  # All datasets
         required=True,
         help='Define the dataset name'
     )

@@ -32,7 +32,7 @@
     "alpha": 0.15,
     "method": "omission_fst_tau_plus_gamma"
   },
-  "OMOP": {
+  "PRIV_DS": {
     "lambda": 0.8,
     "tau": 0.5,
     "gamma": 0.5,

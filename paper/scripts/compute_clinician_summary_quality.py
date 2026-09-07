@@ -155,7 +155,7 @@ def score(cache_only: bool):
 
     # `prompts.get_prompt_config` expects short keys ('aci', 'bhc'); map from folder.
     PROMPT_KEY = {"ACI_Bench": "aci", "MIMIC_IV_BHC": "bhc",
-                  "MIMIC_III_CXR": "cxr", "SumPubMed": "pubmed", "OMOP": "omop"}
+                  "MIMIC_III_CXR": "cxr", "SumPubMed": "pubmed", "PRIV_DS": "privds"}
     prompt_cfgs = {}
     for version, label, name, r in tqdm(todo):
         ds = r["dataset"]

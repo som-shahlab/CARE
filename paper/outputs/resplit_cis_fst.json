@@ -25022,7 +25022,7 @@
     ],
     "omission_method": "fst_tau_plus_gamma"
   },
-  "OMOP": {
+  "PRIV_DS": {
     "dataset": "Priv-DS",
     "n_total": 500,
     "n_cal": 350,

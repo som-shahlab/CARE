@@ -43,7 +43,7 @@ DATASETS = [
     ("ACI_Bench",     "ACI-Bench"),
     ("MIMIC_IV_BHC",  "MIMIC-BHC"),
     ("MIMIC_III_CXR", "MIMIC-CXR"),
-    ("OMOP",          "Priv-DS"),
+    ("PRIV_DS",          "Priv-DS"),
     ("SumPubMed",     "SumPubMed"),
 ]
 

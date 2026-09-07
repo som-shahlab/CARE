@@ -211,7 +211,7 @@ def is_valid_source_sentence(sentence: str, dataset: str = "aci") -> bool:
     if _BHC_ADMIN_TAG.match(text):
         return False
     
-    # omop specific filters
+    # privds specific filters
     if re.match(r'^NOTE_DATETIME:\s*.+\|\s*NOTE_TITLE:\s*.+$', text):
         return False
 

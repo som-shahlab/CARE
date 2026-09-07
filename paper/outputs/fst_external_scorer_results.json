@@ -12059,8 +12059,8 @@
       }
     ]
   },
-  "OMOP__nli_embed": {
-    "dataset": "OMOP",
+  "PRIV_DS__nli_embed": {
+    "dataset": "PRIV_DS",
     "label": "Priv-DS",
     "scorer": "nli_embed",
     "n_docs": 500,
@@ -13399,8 +13399,8 @@
       }
     ]
   },
-  "OMOP__embed_only": {
-    "dataset": "OMOP",
+  "PRIV_DS__embed_only": {
+    "dataset": "PRIV_DS",
     "label": "Priv-DS",
     "scorer": "embed_only",
     "n_docs": 500,
@@ -14739,8 +14739,8 @@
       }
     ]
   },
-  "OMOP__alignscore": {
-    "dataset": "OMOP",
+  "PRIV_DS__alignscore": {
+    "dataset": "PRIV_DS",
     "label": "Priv-DS",
     "scorer": "alignscore",
     "n_docs": 500,

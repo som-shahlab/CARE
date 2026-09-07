@@ -1348,7 +1348,7 @@ def main():
     )
     parser.add_argument(
         '--dataset',
-        choices=["aci", "meq", "bhc", "cxr", "pubmed", "omop"],
+        choices=["aci", "meq", "bhc", "cxr", "pubmed", "privds"],
         required=True,
         help='Define the dataset name'
     )

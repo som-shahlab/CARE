@@ -807,7 +807,7 @@
       }
     ]
   },
-  "OMOP": {
+  "PRIV_DS": {
     "dataset": "Priv-DS",
     "n_total": 500,
     "n_test": 150,
