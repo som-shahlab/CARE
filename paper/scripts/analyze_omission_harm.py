@@ -993,7 +993,7 @@ def main():
 
     llm = LLMClient(
         model=model,
-        api_key=config.SECUREGPT_API_KEY,
+        api_key=config.LLM_API_KEY,
         api_version=config.AZURE_API_VERSION,
         azure_endpoint=config.get_azure_endpoint(model),
         max_retries=config.MAX_RETRIES,

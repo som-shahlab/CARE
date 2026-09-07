@@ -30,12 +30,12 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 PAPER_DIR = PROJECT_ROOT / "paper"
 OUTPUT_DIR = PAPER_DIR / "outputs"
 CLINICIAN_DIR = PAPER_DIR / "clinician_study"
-DATA_ROOT = Path("/share/pi/nigam/projects/conf-summ")
+DATA_ROOT = Path("/path/to/data")
 
 CLINICIANS = [
-    ("C1", "Chloe",   "clinician_study_v2_Chloe.json",   "clinician_study_v3_chloe.json"),
-    ("C2", "Jenelle", "clinician_study_v2_Jenelle.json", "clinician_study_v3_jenelle.json"),
-    ("C3", "Anson",   "clinician_study_v2_anson.json",   "clinician_study_v3_anson.json"),
+    ("C1", "C1", "clinician_study_v2_C1.json", "clinician_study_v3_C1.json"),
+    ("C2", "C2", "clinician_study_v2_C2.json", "clinician_study_v3_C2.json"),
+    ("C3", "C3", "clinician_study_v2_C3.json", "clinician_study_v3_C3.json"),
 ]
 
 THRESHOLDS = {

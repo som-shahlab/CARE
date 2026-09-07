@@ -24,7 +24,7 @@ The optional external scorers also need AlignScore weights, installed separately
 Create `.env` (copy from `.env.example`) with your API keys:
 
 ```bash
-SECUREGPT_API_KEY=your_key_here  # Stanford Healthcare APIM (GPT / Llama / Claude / Gemini)
+LLM_API_KEY=your_key_here  # API gateway key (GPT / Llama / Claude / Gemini)
 BEDROCK_API_KEY=                 # optional, for Bedrock-hosted models
 ```
 
@@ -36,7 +36,7 @@ they contain protected health information and are governed by their respective
 data-use agreements (MIMIC via PhysioNet, etc.). With access to that data:
 
 ```bash
-export CARE_DATA_ROOT=/path/to/your/data   # defaults to /share/pi/nigam/projects/conf-summ
+export CARE_DATA_ROOT=/path/to/your/data
 ```
 
 ## Repo Structure
@@ -155,7 +155,8 @@ Implementation: `care.calibration.select_omission_threshold_fst_fractional`
 ```bibtex
 @article{care2026,
   title={CARE: A Conformal Safety Layer for Medical Summarization},
-  author={Bedi, Suhana and Lin, Bridget and Zhou, Anson Y. and Stanwyck, Chloe O. and Jindal, Jenelle A. and Koyejo, Sanmi and Stutz, David and Shah, Nigam H.},
+  author={Anonymous},
+  note={Under review; author list withheld for blind review},
   year={2026}
 }
 ```

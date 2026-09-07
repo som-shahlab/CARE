@@ -24,7 +24,7 @@ Outputs
 
 Usage
 -----
-    SECUREGPT_API_KEY=... python3 paper/scripts/compute_clinician_summary_quality.py
+    LLM_API_KEY=... python3 paper/scripts/compute_clinician_summary_quality.py
     python3 paper/scripts/compute_clinician_summary_quality.py --analyze-only
 """
 import argparse
@@ -49,12 +49,12 @@ CACHE_PATH = OUTPUT_DIR / "clinician_summary_quality_cache.jsonl"
 SUMMARY_PATH = OUTPUT_DIR / "clinician_summary_quality.json"
 
 STUDY_FILES = [
-    ("v2", "C1", "Chloe",   "clinician_study_v2_Chloe.json"),
-    ("v2", "C2", "Jenelle", "clinician_study_v2_Jenelle.json"),
-    ("v2", "C3", "Anson",   "clinician_study_v2_anson.json"),
-    ("v3", "C1", "Chloe",   "clinician_study_v3_chloe.json"),
-    ("v3", "C2", "Jenelle", "clinician_study_v3_jenelle.json"),
-    ("v3", "C3", "Anson",   "clinician_study_v3_anson.json"),
+    ("v2", "C1", "C1", "clinician_study_v2_C1.json"),
+    ("v2", "C2", "C2", "clinician_study_v2_C2.json"),
+    ("v2", "C3", "C3", "clinician_study_v2_C3.json"),
+    ("v3", "C1", "C1", "clinician_study_v3_C1.json"),
+    ("v3", "C2", "C2", "clinician_study_v3_C2.json"),
+    ("v3", "C3", "C3", "clinician_study_v3_C3.json"),
 ]
 
 PERM_ITERS = 10000
@@ -109,11 +109,11 @@ def omission_rate(importance_labels, coverage_labels):
 
 
 def make_oracle() -> LLMClient:
-    if not config.SECUREGPT_API_KEY:
-        sys.exit("SECUREGPT_API_KEY env var is not set; cannot call GPT-5.")
+    if not config.LLM_API_KEY:
+        sys.exit("LLM_API_KEY env var is not set; cannot call GPT-5.")
     return LLMClient(
         model=config.ORACLE_MODEL,
-        api_key=config.SECUREGPT_API_KEY,
+        api_key=config.LLM_API_KEY,
         api_version=config.AZURE_API_VERSION,
         azure_endpoint=config.get_azure_endpoint(config.ORACLE_MODEL),
         max_tokens=config.ORACLE_MAX_TOKENS,

@@ -6,7 +6,7 @@
 # factuality controller is 1D scalar CRC throughout.
 #
 # All model outputs (judge/oracle scores, splits) are read from CARE_DATA_ROOT
-# (defaults to /share/pi/nigam/projects/conf-summ). You need read access to
+# (defaults to /path/to/data). You need read access to
 # that data — see README.md. Generated tables/figures land in paper/outputs/.
 #
 # Steps are run via run()/opt() helpers: a failed step prints a warning and the

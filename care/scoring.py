@@ -71,7 +71,7 @@ def get_thread_judge():
     if getattr(_thread_local, "judge", None) is None:
         _thread_local.judge = create_llm_client(
             model=config.JUDGE_MODEL,
-            api_key=config.SECUREGPT_API_KEY,
+            api_key=config.LLM_API_KEY,
             api_version=config.AZURE_API_VERSION,
             azure_endpoint=config.get_azure_endpoint(config.JUDGE_MODEL),
             max_tokens=config.JUDGE_MAX_TOKENS,
@@ -875,14 +875,14 @@ def run_phase2(
     # Initialize LLM client for judge
     logger.info(f"Initializing judge client...")
     logger.info(f"  Judge: {config.JUDGE_MODEL}")
-    logger.info(f"  API Key: {config.SECUREGPT_API_KEY[:10]}...")
+    logger.info(f"  API Key: {config.LLM_API_KEY[:10]}...")
     if domain_specific:
         logger.info(f"[PROMPT CHECK] Factuality system prompt:\n{prompt_config.custom_factuality_triage_system_prompt}")
         logger.info(f"[PROMPT CHECK] Importance system prompt:\n{prompt_config.custom_importance_triage_system_prompt}")
 
     judge = create_llm_client(
         model=config.JUDGE_MODEL,
-        api_key=config.SECUREGPT_API_KEY,
+        api_key=config.LLM_API_KEY,
         api_version=config.AZURE_API_VERSION,
         azure_endpoint=config.get_azure_endpoint(config.JUDGE_MODEL),
         max_tokens=config.JUDGE_MAX_TOKENS,

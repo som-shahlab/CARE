@@ -63,7 +63,7 @@ def get_thread_clients():
 
     _thread_local.summarizer = LLMClient(
         model=config.SUMMARIZER_MODEL,
-        api_key=config.SECUREGPT_API_KEY,
+        api_key=config.LLM_API_KEY,
         api_version=config.AZURE_API_VERSION,
         azure_endpoint=config.get_azure_endpoint(config.SUMMARIZER_MODEL),
         max_tokens=config.SUMMARIZER_MAX_TOKENS,
@@ -71,7 +71,7 @@ def get_thread_clients():
     )
     _thread_local.oracle = LLMClient(
         model=config.ORACLE_MODEL,
-        api_key=config.SECUREGPT_API_KEY,
+        api_key=config.LLM_API_KEY,
         api_version=config.AZURE_API_VERSION,
         azure_endpoint=config.get_azure_endpoint(config.ORACLE_MODEL),
         max_tokens=config.ORACLE_MAX_TOKENS,
@@ -739,9 +739,9 @@ def run_phase1(
     logger.info(f"Initializing LLM clients...")
     logger.info(f"  Summarizer: {config.SUMMARIZER_MODEL}")
     logger.info(f"  Oracle (all ground truth labels): {config.ORACLE_MODEL}")
-    logger.info(f"  API Key: {config.SECUREGPT_API_KEY[:10]}...")
+    logger.info(f"  API Key: {config.LLM_API_KEY[:10]}...")
 
-    summ_api_key = config.BEDROCK_API_KEY if config.SUMMARIZER_MODEL.lower().startswith('bedrock/') else config.SECUREGPT_API_KEY
+    summ_api_key = config.BEDROCK_API_KEY if config.SUMMARIZER_MODEL.lower().startswith('bedrock/') else config.LLM_API_KEY
     summarizer = LLMClient(
         model=config.SUMMARIZER_MODEL,
         api_key=summ_api_key,
@@ -753,7 +753,7 @@ def run_phase1(
 
     oracle = LLMClient(
         model=config.ORACLE_MODEL,
-        api_key=config.SECUREGPT_API_KEY,
+        api_key=config.LLM_API_KEY,
         api_version=config.AZURE_API_VERSION,
         azure_endpoint=config.get_azure_endpoint(config.ORACLE_MODEL),
         max_tokens=config.ORACLE_MAX_TOKENS,

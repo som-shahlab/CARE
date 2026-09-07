@@ -5,7 +5,7 @@ Computes document-level CRC abstention baselines (min and mean p_fact)
 and compares against sentence-level CARE flagging.
 
 Reads Phase 2 calibrated_scores.jsonl and Phase 3 conformal_thresholds.json
-from canonical data at /share/pi/nigam/projects/conf-summ/.
+from canonical data at /path/to/data/.
 """
 import json
 import numpy as np

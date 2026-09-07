@@ -20,7 +20,7 @@ DATA_DIR = PROJECT_ROOT / 'data'
 
 # Canonical data root — override with CARE_DATA_ROOT env var
 CANONICAL_DATA_ROOT = Path(
-    os.environ.get("CARE_DATA_ROOT", "/share/pi/nigam/projects/conf-summ")
+    os.environ.get("CARE_DATA_ROOT", "/path/to/data")
 )
 
 # Tokenizer paths (co-located with canonical data root)
@@ -96,13 +96,13 @@ SUMMARIZER_MODEL = os.environ.get('CRC_SUMMARIZER_MODEL', 'llama-3.3-70b-instruc
 ORACLE_MODEL = os.environ.get('CRC_ORACLE_MODEL', 'gpt-5')        # Strong oracle for Y_fact and Y_imp
 JUDGE_MODEL = os.environ.get('CRC_JUDGE_MODEL', 'gpt-5-mini')     # Vote-rate scorer (m=5 replicates)
 
-# Azure API configuration (Stanford Healthcare APIM)
+# Azure API configuration (hosted API gateway)
 from dotenv import load_dotenv
 
 # Load .env file from project root
 load_dotenv(PROJECT_ROOT / '.env')
 
-SECUREGPT_API_KEY = os.getenv('SECUREGPT_API_KEY')
+LLM_API_KEY = os.getenv('LLM_API_KEY')
 AZURE_API_VERSION = '2024-12-01-preview'
 
 BEDROCK_API_KEY = os.getenv('BEDROCK_API_KEY', '')

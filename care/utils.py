@@ -66,7 +66,7 @@ class LLMClient:
 
         Args:
             model: Model name (e.g., 'gpt-5', 'llama-3.3-70b-instruct')
-            api_key: SecureGPT API key
+            api_key: API gateway key
             api_version: Azure API version (unused for Llama)
             azure_endpoint: API endpoint URL
             max_retries: Maximum number of retry attempts
@@ -89,7 +89,7 @@ class LLMClient:
         self.is_azure_openai = 'openai-eastus2' in azure_endpoint
 
         if self.is_claude:
-            # Claude uses Stanford APIM prompt_text endpoint (raw REST)
+            # Claude uses the APIM prompt_text endpoint (raw REST)
             self.claude_endpoint = azure_endpoint
             self.claude_headers = {
                 'Ocp-Apim-Subscription-Key': api_key,
@@ -236,8 +236,8 @@ class LLMClient:
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
     ) -> str:
-        """Generate completion from Claude via Stanford APIM prompt_text endpoint."""
-        # Stanford APIM only accepts prompt_text — combine system + user
+        """Generate completion from Claude via the APIM prompt_text endpoint."""
+        # This APIM endpoint only accepts prompt_text — combine system + user
         prompt_text = f"{system_prompt}\n\n{user_prompt}"
 
         payload = {
@@ -295,7 +295,7 @@ class LLMClient:
     temperature: Optional[float] = None,
     max_tokens: Optional[int] = None,
     ) -> str:
-        """Generate completion from Gemini via Stanford APIM endpoint."""
+        """Generate completion from Gemini via the APIM endpoint."""
         payload = {
             "system_instruction": {"parts": [{"text": system_prompt}]},
             "contents": [
