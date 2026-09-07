@@ -83,10 +83,10 @@ class LLMClient:
         self.rate_limit_delay = rate_limit_delay
         self.logger = setup_logging(f'LLMClient.{model}')
 
-        # Determine client type based on endpoint/model
+        # Determine client type from the model name
         self.is_claude = 'claude' in model.lower()
         self.is_gemini = 'gemini' in model.lower()
-        self.is_azure_openai = 'openai-eastus2' in azure_endpoint
+        self.is_azure_openai = 'gpt' in model.lower()  # GPT models use the Azure OpenAI client
 
         if self.is_claude:
             # Claude uses the APIM prompt_text endpoint (raw REST)
