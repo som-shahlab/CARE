@@ -155,8 +155,11 @@ Implementation: `care.calibration.select_omission_threshold_fst_fractional`
 ```bibtex
 @article{care2026,
   title={CARE: A Conformal Safety Layer for Medical Summarization},
-  author={Anonymous},
-  note={Under review; author list withheld for blind review},
-  year={2026}
+  booktitle = {Proceedings of the Sixth Machine Learning for Health Symposium},
+  author={Bedi, Suhana and Lin, Bridget and Zhou, Anson Y. and Stanwyck, Chloe O. and Jindal, Jenelle A. and Koyejo, Sanmi and Stutz, David and Shah, Nigam H.},
+  year={2026},
+  archivePrefix={arXiv},
+  primaryClass={cs.AI},
+  url={https://arxiv.org/abs/2606.08969}
 }
 ```
