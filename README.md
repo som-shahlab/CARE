@@ -11,6 +11,8 @@ CARE is a **post-hoc safety layer** that overlays calibrated risk signals on bla
 
 Human references are used **offline only** for calibration — never at test time.
 
+<img width="985" height="450" alt="care_figure_updated (1)" src="https://github.com/user-attachments/assets/66a16276-cfe0-4f80-a9df-fdcf704b14d4" />
+
 ## Setup
 
 ```bash
