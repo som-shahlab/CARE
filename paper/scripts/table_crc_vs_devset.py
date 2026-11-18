@@ -58,18 +58,13 @@ def generate_table(results):
     latex.append(r"\small")
     latex.append(r"\setlength{\tabcolsep}{4pt}")
     latex.append(r"\caption{Omission risk violation rate at $\alpha = 0.15$ for "
-                 r"\textsc{Care} (LTT-FST with the finite-sample correction) "
-                 r"versus \textbf{dev-set tuning} (the identical FST ordering "
-                 r"but stopping at the first cell whose \emph{raw} empirical "
-                 r"loss $\le\alpha$, i.e.\ without the $\frac{n}{n{+}1}$ "
-                 r"correction). Means are computed over 20 random subsamples "
-                 r"of size $n$ from each dataset. Dev-set tuning violates the "
-                 r"target on multiple ACI-Bench cells and on MIMIC-CXR at "
-                 r"small $n$; \textsc{Care} is valid at every cell except a "
-                 r"single marginal ACI-Bench point ($n{=}50$, $16.2\%$), "
-                 r"within Monte-Carlo noise of 20 repeats on the smallest "
-                 r"dataset. The two methods converge as $n$ grows and the "
-                 r"finite-sample correction shrinks.}")
+                 r"\textsc{Care} (LTT-FST: Hoeffding--Bentkus test at $\delta=0.05$) "
+                 r"versus \textbf{dev-set tuning} (the identical ordering and "
+                 r"min-workload deployment rule, but accepting cells whose "
+                 r"\emph{raw} empirical loss is $\le\alpha$, with no finite-sample test). "
+                 r"Means are computed over 20 random subsamples of size $n$ from each "
+                 r"dataset. For $n<19$ no cell can be certified at $(\alpha,\delta)=(0.15,0.05)$, "
+                 r"so \textsc{Care} falls back to surfacing every source sentence (zero loss).}")
     latex.append(r"\label{tab:crc-vs-devset}")
 
     n_ds = len(results)

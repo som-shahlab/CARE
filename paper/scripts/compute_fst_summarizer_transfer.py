@@ -15,6 +15,7 @@ from collections import OrderedDict
 from pathlib import Path
 from tqdm import tqdm
 
+from care.calibration import select_omission_threshold_ltt_fst
 from care.config import (
     CANONICAL_DATA_ROOT as DATA_ROOT,
     PAPER_OUTPUT_DIR as OUTPUT_DIR,
@@ -71,16 +72,9 @@ def compute_factuality(doc, lam):
 
 
 def fst_calibrate_omission(cal_docs, alpha=ALPHA_OMIT, grid=GRID_OMIT):
-    n = len(cal_docs)
-    vals = np.arange(0.0, 1.0 + grid, grid)
-    cells = [(float(t), float(g)) for t in vals for g in vals]
-    cells.sort(key=lambda c: (-(c[0] + c[1]), -c[0], -c[1]))
-    for tau, gamma in cells:
-        losses = [compute_omission(d, tau, gamma)[0] for d in cal_docs]
-        adj = (n / (n + 1)) * np.mean(losses) + 1.0 / (n + 1)
-        if adj <= alpha:
-            return float(tau), float(gamma), True
-    return 0.0, 0.0, False
+    """LTT-FST (care.calibration). Returns (tau, gamma, is_feasible)."""
+    r = select_omission_threshold_ltt_fst(cal_docs, alpha, grid_resolution=grid)
+    return r["tau"], r["gamma"], r["is_feasible"]
 
 
 def calibrate_factuality(cal_docs, alpha=ALPHA_FACT, grid=GRID_FACT):

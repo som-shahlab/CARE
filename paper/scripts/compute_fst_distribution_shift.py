@@ -2,7 +2,7 @@
 """FST distribution-shift validity check (100 resplits).
 
 Mirrors the omission portion of table_12_distribution_shift.py but uses
-LTT-FST (τ+γ descending) calibration in place of 2D Joint argmin-workload.
+LTT-FST (care.calibration: HB, τ+γ ascending, min-WL) calibration in place of 2D Joint argmin-workload.
 
 Two experiments:
   1. Cross-dataset transfer: calibrate FST on dataset A's cal set, evaluate
@@ -17,6 +17,7 @@ import numpy as np
 from pathlib import Path
 from tqdm import tqdm
 
+from care.calibration import select_omission_threshold_ltt_fst
 from care.config import (
     CANONICAL_DATA_ROOT as DATA_ROOT,
     DATASETS,
@@ -81,17 +82,9 @@ def evaluate_factuality(test_docs, lam):
 
 
 def fst_calibrate(cal_docs, alpha=ALPHA, grid=GRID):
-    """LTT-FST τ+γ descending. Returns (tau, gamma, is_feasible)."""
-    n = len(cal_docs)
-    vals = np.arange(0.0, 1.0 + grid, grid)
-    cells = [(float(t), float(g)) for t in vals for g in vals]
-    cells.sort(key=lambda c: (-(c[0] + c[1]), -c[0], -c[1]))
-    for tau, gamma in cells:
-        losses = [compute_omission(d, tau, gamma) for d in cal_docs]
-        adj = (n / (n + 1)) * np.mean(losses) + 1.0 / (n + 1)
-        if adj <= alpha:
-            return float(tau), float(gamma), True
-    return 0.0, 0.0, False
+    """LTT-FST (care.calibration). Returns (tau, gamma, is_feasible)."""
+    r = select_omission_threshold_ltt_fst(cal_docs, alpha, grid_resolution=grid)
+    return r["tau"], r["gamma"], r["is_feasible"]
 
 
 def evaluate(test_docs, tau, gamma):

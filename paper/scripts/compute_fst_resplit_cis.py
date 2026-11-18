@@ -24,6 +24,7 @@ from pathlib import Path
 import numpy as np
 from tqdm import tqdm
 
+from care.calibration import select_omission_threshold_ltt_fst
 from care.config import (
     CANONICAL_DATA_ROOT as DATA_ROOT,
     DATASETS,
@@ -64,44 +65,18 @@ def compute_omission_2d(doc, tau, gamma):
     return float(n_missed / n_true), n_surfaced, tp, n_true, (1 if n_missed > 0 else 0)
 
 
-def grid_cells(grid_resolution):
-    vals = np.arange(0.0, 1.0 + grid_resolution, grid_resolution)
-    return [(float(t), float(g)) for t in vals for g in vals]
-
-
-def order_cells(cells, ordering):
-    cs = list(cells)
-    if ordering == "tau_plus_gamma":
-        cs.sort(key=lambda c: (-(c[0] + c[1]), -c[0], -c[1]))
-    elif ordering == "lex_tau":
-        cs.sort(key=lambda c: (-c[0], -c[1]))
-    elif ordering == "diagonal":
-        # Restrict to τ = γ chain only.
-        diag = sorted({c[0] for c in cs}, reverse=True)
-        cs = [(v, v) for v in diag]
-    else:
-        raise ValueError(f"unknown ordering: {ordering}")
-    return cs
-
-
 # ---------------------------------------------------------------------------
 # FST calibration
 # ---------------------------------------------------------------------------
 def calibrate_omission_fst(cal_docs, alpha, ordering, grid_resolution=GRID_OMIT):
-    """Walk the pre-specified ordering; stop at first cell whose CRC bound
-    (n/(n+1)) R̂ + 1/(n+1) <= alpha is satisfied.
+    """LTT-FST (care.calibration.select_omission_threshold_ltt_fst): HB p-values,
+    delta=0.05, permissive->restrictive ordering, min-workload certified cell.
 
-    Returns (tau, gamma, steps_walked, total_cells, is_feasible).
+    Returns (tau, gamma, n_certified, total_cells, is_feasible). n_certified is
+    stored under the legacy key 'fst_steps_walked'.
     """
-    n = len(cal_docs)
-    cells = order_cells(grid_cells(grid_resolution), ordering)
-    for step, (tau, gamma) in enumerate(cells, start=1):
-        losses = [compute_omission_2d(d, tau, gamma)[0] for d in cal_docs]
-        adj_risk = (n / (n + 1)) * float(np.mean(losses)) + 1.0 / (n + 1)
-        if adj_risk <= alpha:
-            return float(tau), float(gamma), step, len(cells), True
-    # No feasible cell along the sequence -> fall back to (0, 0).
-    return 0.0, 0.0, len(cells), len(cells), False
+    r = select_omission_threshold_ltt_fst(cal_docs, alpha, grid_resolution=grid_resolution, ordering=ordering)
+    return r["tau"], r["gamma"], r["n_certified"], r["grid_size"], r["is_feasible"]
 
 
 def evaluate_method_on_test(test_docs, tau, gamma, avg_src_sents):

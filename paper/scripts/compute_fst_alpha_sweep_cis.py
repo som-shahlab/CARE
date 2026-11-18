@@ -2,7 +2,7 @@
 """FST α-sweep with 95% CIs via 100 random resplits.
 
 Mirrors compute_alpha_sweep_cis.py but selects (τ, γ) via LTT-FST
-(τ+γ descending ordering, first-feasible stop) instead of 2D Joint
+(HB p-values, τ+γ ascending, δ=0.05, min-workload certified cell) instead of 2D Joint
 argmin-workload. Saves to fst_alpha_sweep_cis.json.
 
 Uses identical seeds as compute_alpha_sweep_cis.py so per-resplit values
@@ -15,6 +15,7 @@ from collections import OrderedDict
 from pathlib import Path
 from tqdm import tqdm
 
+from care.calibration import ltt_fst_ordering, ltt_fst_select_from_grid
 from care.config import (
     CANONICAL_DATA_ROOT as DATA_ROOT,
     DATASETS,
@@ -70,23 +71,8 @@ def precompute_omission_grid(docs, tau_vals, gamma_vals):
 
 
 def fst_order_indices(tau_vals, gamma_vals):
-    """Return list of (ti, gi) walking cells in τ+γ descending order
-    (ties: τ desc, γ desc). Data-independent."""
-    cells = [(ti, gi, float(tau_vals[ti]), float(gamma_vals[gi]))
-             for ti in range(len(tau_vals)) for gi in range(len(gamma_vals))]
-    cells.sort(key=lambda c: (-(c[2] + c[3]), -c[2], -c[3]))
-    return [(c[0], c[1]) for c in cells]
-
-
-def calibrate_omit_fst_from_grid(loss_mat_cal, alpha, order_idx):
-    """Walk cells in pre-specified order; stop at first whose adj risk ≤ α."""
-    n = loss_mat_cal.shape[0]
-    mean_loss = loss_mat_cal.mean(axis=0)  # [n_tau, n_gamma]
-    for ti, gi in order_idx:
-        adj = (n / (n + 1)) * mean_loss[ti, gi] + 1.0 / (n + 1)
-        if adj <= alpha:
-            return int(ti), int(gi), True
-    return 0, 0, False  # fall back to (0,0)
+    """(ti, gi) in the paper's LTT-FST order: τ+γ ascending (permissive -> restrictive)."""
+    return ltt_fst_ordering(tau_vals, gamma_vals, "tau_plus_gamma")
 
 
 def _omit_stats(o_loss_t, o_wl_t, o_tp_t, o_ntrue_t, ti, gi, avg_src_sents):
@@ -136,21 +122,13 @@ def run_dataset(dataset_key, alphas):
 
         avg_src_sents = float(np.mean([len(d.get("importance_probs", [])) for d in test_docs]))
 
-        oL_c, _, _, _ = precompute_omission_grid(cal_docs, tau_vals, gamma_vals)
+        oL_c, oWl_c, _, _ = precompute_omission_grid(cal_docs, tau_vals, gamma_vals)
         oL_t, oWl_t, oTp_t, oN_t = precompute_omission_grid(test_docs, tau_vals, gamma_vals)
 
         for alpha in alphas:
-            # Walk the ordering with mean_loss already cached
-            n_c = oL_c.shape[0]
-            mean_loss_c = oL_c.mean(axis=0)
-            ti, gi, is_feas = 0, 0, False
-            steps = 0
-            for (ti_, gi_) in order_idx:
-                steps += 1
-                adj = (n_c / (n_c + 1)) * mean_loss_c[ti_, gi_] + 1.0 / (n_c + 1)
-                if adj <= alpha:
-                    ti, gi, is_feas = int(ti_), int(gi_), True
-                    break
+            # LTT-FST: HB p-values, delta=0.05, min-workload certified cell.
+            # "steps_walked" now records the number of certified cells.
+            ti, gi, steps, is_feas = ltt_fst_select_from_grid(oL_c, oWl_c, order_idx, alpha)
 
             m = _omit_stats(oL_t, oWl_t, oTp_t, oN_t, ti, gi, avg_src_sents)
             m["tau"] = float(tau_vals[ti])

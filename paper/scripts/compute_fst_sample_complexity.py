@@ -13,6 +13,7 @@ import numpy as np
 from pathlib import Path
 from tqdm import tqdm
 
+from care.calibration import select_omission_threshold_ltt_fst, omission_grid_matrices, ltt_fst_ordering
 from care.config import (
     CANONICAL_DATA_ROOT as DATA_ROOT,
     DATASETS,
@@ -43,34 +44,34 @@ def compute_omission(doc, tau, gamma):
 
 
 def fst_calibrate(cal_docs, alpha=ALPHA, grid=GRID):
-    """LTT-FST with the finite-sample correction (the CARE controller)."""
-    n = len(cal_docs)
-    vals = np.arange(0.0, 1.0 + grid, grid)
-    cells = [(float(t), float(g)) for t in vals for g in vals]
-    cells.sort(key=lambda c: (-(c[0] + c[1]), -c[0], -c[1]))
-    for tau, gamma in cells:
-        losses = [compute_omission(d, tau, gamma) for d in cal_docs]
-        adj = (n / (n + 1)) * np.mean(losses) + 1.0 / (n + 1)
-        if adj <= alpha:
-            return float(tau), float(gamma), True
-    return 0.0, 0.0, False
+    """LTT-FST (care.calibration; the CARE controller). Returns (tau, gamma, is_feasible).
+    With HB p-values nothing is certifiable below n=19 at alpha=0.15, delta=0.05,
+    so small n falls back to (0, 0)."""
+    r = select_omission_threshold_ltt_fst(cal_docs, alpha, grid_resolution=grid)
+    return r["tau"], r["gamma"], r["is_feasible"]
 
 
 def fst_calibrate_devset(cal_docs, alpha=ALPHA, grid=GRID):
-    """LTT-FST WITHOUT the finite-sample correction (dev-set tuning).
+    """LTT-FST WITHOUT the finite-sample test (dev-set tuning).
 
-    Walks the identical tau+gamma-descending ordering but stops at the first
-    cell whose raw empirical risk R̂ <= alpha, i.e. it omits the n/(n+1)
-    correction term. This isolates the role of the correction at small n.
+    Walks the identical tau+gamma-ascending ordering, accepting cells while the
+    raw empirical risk R̂ <= alpha (no HB p-value), and deploys the min-workload
+    accepted cell, exactly as LTT-FST does. This isolates the role of the
+    finite-sample test at small n.
     """
     vals = np.arange(0.0, 1.0 + grid, grid)
-    cells = [(float(t), float(g)) for t in vals for g in vals]
-    cells.sort(key=lambda c: (-(c[0] + c[1]), -c[0], -c[1]))
-    for tau, gamma in cells:
-        losses = [compute_omission(d, tau, gamma) for d in cal_docs]
-        if np.mean(losses) <= alpha:
-            return float(tau), float(gamma)
-    return 0.0, 0.0
+    loss, workload = omission_grid_matrices(cal_docs, vals, vals)
+    risk, mean_wl = loss.mean(axis=0), workload.mean(axis=0)
+    accepted = []
+    for (i, j) in ltt_fst_ordering(vals, vals, "tau_plus_gamma"):
+        if risk[i, j] <= alpha:
+            accepted.append((i, j))
+        else:
+            break
+    if not accepted:
+        return 0.0, 0.0
+    i, j = min(accepted, key=lambda c: mean_wl[c])
+    return float(vals[i]), float(vals[j])
 
 
 def run_dataset(dataset_key):
