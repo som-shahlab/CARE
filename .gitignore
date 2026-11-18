@@ -81,3 +81,8 @@ paper/outputs/*.stale_*.json
 # Local agent plans and scratch (contain local paths)
 docs/superpowers/
 .superpowers/
+
+# Not distributed: clinician-study aggregates (IRB) and ACI-Bench example text (licence)
+/paper/outputs/camera_ready/clinician_labels.tex
+/paper/outputs/camera_ready/confusion.tex
+/paper/outputs/camera_ready/example_aci.tex
