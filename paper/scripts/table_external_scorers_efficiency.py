@@ -9,10 +9,9 @@ external scorers' factuality/omission recall collapses.
 
 Omission columns are the LTT-FST controller. LLM judges:
   - GPT-5-mini (primary, all 5 datasets)        — paper/outputs/resplit_cis_fst.json
-  - Gemini 2.5 Pro (alt, ACI-Bench + MIMIC-BHC) — paper/outputs/gemini_resplit_cis.json
-    (Gemini-judge omission shown at the 2D Joint operating point — the
-    Gemini-judge phase-2 data was not regenerated for FST; factuality is
-    unchanged and the BHC omission operating point is identical under FST.)
+  - Gemini 2.5 Pro, Qwen3.5-4B (alt judges, ACI-Bench + MIMIC-BHC)
+                                                — paper/outputs/fst_alt_judge_results.json
+    (factuality: 1D CRC; omission: LTT-FST — same procedure as GPT-5-mini)
 And three external scorers (NLI, Embed, AlignScore) for all 5 datasets:
   paper/outputs/fst_external_scorer_results.json
 """
@@ -22,7 +21,8 @@ import numpy as np
 from care.config import DATASETS, PAPER_OUTPUT_DIR as OUTPUT_DIR
 
 GPT5_PATH = OUTPUT_DIR / "resplit_cis_fst.json"
-GEMINI_PATH = OUTPUT_DIR / "gemini_resplit_cis.json"
+ALT_PATH = OUTPUT_DIR / "fst_alt_judge_results.json"
+ALT_JUDGES = [("gemini-2.5-pro", "Gemini 2.5 Pro"), ("qwen3.5-4b", "Qwen3.5-4B")]
 EXT_PATH = OUTPUT_DIR / "fst_external_scorer_results.json"
 OUT_PATH = OUTPUT_DIR / "table_external_scorers_efficiency.tex"
 
@@ -40,7 +40,8 @@ EXT_LABELS = {
 # ---------- helpers ----------
 
 def fmt_flagged(mean, pct):
-    return f"{mean:.1f} ({pct:.1f}\\%)"
+    pct_s = "100" if round(pct, 1) >= 100.0 else f"{pct:.1f}"  # paper prints "(100\\%)"
+    return f"{mean:.1f} ({pct_s}\\%)"
 
 
 def fmt_rec(mean_pct):
@@ -52,11 +53,11 @@ def load():
         raise SystemExit(f"ERROR: {GPT5_PATH} not found.")
     if not EXT_PATH.exists():
         raise SystemExit(f"ERROR: {EXT_PATH} not found.")
-    if not GEMINI_PATH.exists():
-        raise SystemExit(f"ERROR: {GEMINI_PATH} not found.")
+    if not ALT_PATH.exists():
+        raise SystemExit(f"ERROR: {ALT_PATH} not found.")
     return (
         json.load(open(GPT5_PATH)),
-        json.load(open(GEMINI_PATH)),
+        json.load(open(ALT_PATH)),
         json.load(open(EXT_PATH)),
     )
 
@@ -104,30 +105,18 @@ def ext_row(key, ext):
 
 # ---------- LaTeX ----------
 
-def generate_latex(gpt5, gemini, ext):
+def generate_latex(gpt5, alt, ext):
     lines = []
     lines.append(r"\begin{table}[t]")
     lines.append(r"\centering")
     lines.append(r"\small")
     lines.append(r"\setlength{\tabcolsep}{4pt}")
     lines.append(
-        r"\caption{\textbf{Validity is scorer-agnostic; efficiency is not.} "
-        r"Companion to Table~\ref{tab:external-scorers}. Each dataset block "
-        r"groups rows into \emph{LLM-based judges} (\textsc{GPT-5-mini}, the "
-        r"main pipeline; \textsc{Gemini~2.5~Pro} as a second LLM family on the "
-        r"two datasets we ran it on) and \emph{External scorers} from the "
-        r"faithfulness-evaluation literature (NLI cross-encoder, BERT embedding "
-        r"cosine, AlignScore). All scorers run \textsc{Care} at $\alpha=0.15$ "
-        r"over the same 100 random 70/30 cal/test resplits. \emph{Flagged}: "
-        r"mean sentences flagged per document (and \% of total), matching "
-        r"Tables~\ref{tab:main-results}--\ref{tab:baselines}. \emph{Rec\%}: "
-        r"mean fraction of true hallucinations / true omissions surfaced. "
-        r"All scorers maintain $\alpha$-validity (Table~\ref{tab:external-scorers}). "
-        r"LLM-based judges achieve it with substantially fewer flags at "
-        r"comparable or better recall, and are the only scorer family that "
-        r"retains usable recall on \textsc{MIMIC-CXR} radiology reports "
-        r"(83\% / 59\% factuality / omission recall for \textsc{GPT-5-mini}, "
-        r"vs.\ 53--60\% / 38--43\% for external scorers).}"
+        r"\caption{Scorer efficiency at $\alpha=0.15$ (full version of Table~\ref{tab:scorers-compact}). "
+        r"All scorers use \textsc{CARE} calibration over the same 100 random 70/30 calibration/test resplits; "
+        r"importance is held fixed to the LLM judge for external scorers. \emph{Flagged}: mean sentences "
+        r"flagged or surfaced per document (\% of total). \emph{Rec\%}: mean recall of oracle-labeled "
+        r"hallucinations or omissions. Validity for each scorer is reported in Table~\ref{tab:external-scorers}.}"
     )
     lines.append(r"\label{tab:external-scorers-efficiency}")
     lines.append(r"\begin{tabular}{lll rr rr}")
@@ -157,11 +146,13 @@ def generate_latex(gpt5, gemini, ext):
                 rf"\textbf{{{or_m:.1f}}}",
             )
         )
-        if ds_key in gemini:
-            fwl_m, fwl_pct, fr_m, owl_m, owl_pct, or_m = judge_row(ds_key, gemini)
+        for jkey, jlabel in ALT_JUDGES:
+            if f"{ds_key}__{jkey}" not in alt:
+                continue
+            fwl_m, fwl_pct, fr_m, owl_m, owl_pct, or_m = judge_row(f"{ds_key}__{jkey}", alt)
             llm_rows.append(
                 (
-                    "Gemini 2.5 Pro",
+                    jlabel,
                     fmt_flagged(fwl_m, fwl_pct),
                     fmt_rec(fr_m),
                     fmt_flagged(owl_m, owl_pct),
@@ -222,7 +213,7 @@ def generate_latex(gpt5, gemini, ext):
 
 # ---------- text dump ----------
 
-def generate_text(gpt5, gemini, ext):
+def generate_text(gpt5, alt, ext):
     out = [
         f"Scorer-agnostic CRC: Flagged + Recall (alpha={ALPHA}, 100 resplits)",
         "=" * 100,
@@ -239,10 +230,12 @@ def generate_text(gpt5, gemini, ext):
             f"{fwl_m:6.1f} ({fwl_pct:5.1f}%) {fr_m:8.1f} | "
             f"{owl_m:6.1f} ({owl_pct:5.1f}%) {or_m:8.1f}"
         )
-        if ds_key in gemini:
-            fwl_m, fwl_pct, fr_m, owl_m, owl_pct, or_m = judge_row(ds_key, gemini)
+        for jkey, jlabel in ALT_JUDGES:
+            if f"{ds_key}__{jkey}" not in alt:
+                continue
+            fwl_m, fwl_pct, fr_m, owl_m, owl_pct, or_m = judge_row(f"{ds_key}__{jkey}", alt)
             out.append(
-                f"{'':<11} {'':<8} {'Gemini 2.5 Pro':<16} | "
+                f"{'':<11} {'':<8} {jlabel:<16} | "
                 f"{fwl_m:6.1f} ({fwl_pct:5.1f}%) {fr_m:8.1f} | "
                 f"{owl_m:6.1f} ({owl_pct:5.1f}%) {or_m:8.1f}"
             )
@@ -264,7 +257,7 @@ def generate_text(gpt5, gemini, ext):
 
 
 if __name__ == "__main__":
-    gpt5, gemini, ext = load()
-    print(generate_text(gpt5, gemini, ext))
-    OUT_PATH.write_text(generate_latex(gpt5, gemini, ext))
+    gpt5, alt, ext = load()
+    print(generate_text(gpt5, alt, ext))
+    OUT_PATH.write_text(generate_latex(gpt5, alt, ext))
     print(f"Saved: {OUT_PATH}")
