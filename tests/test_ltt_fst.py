@@ -154,3 +154,8 @@ def test_reported_thresholds_are_grid_values():
     grid = np.arange(0.0, 1.0 + 0.05, 0.05)
     assert any(r["tau"] == float(g) for g in grid)
     assert any(r["gamma"] == float(g) for g in grid)
+
+
+def test_empty_documents_raises():
+    with pytest.raises(ValueError, match="at least one calibration document"):
+        select_omission_threshold_ltt_fst([], ALPHA, DELTA)

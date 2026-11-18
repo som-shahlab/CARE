@@ -717,6 +717,8 @@ def select_omission_threshold_ltt_fst(
     over the calibration draw. No monotonicity along the ordering is required.
     The deployed cell is the minimum-workload certified cell by default.
     """
+    if not documents:
+        raise ValueError("LTT-FST needs at least one calibration document")
     n = len(documents)
     tau_vals = np.arange(0.0, 1.0 + grid_resolution, grid_resolution)
     gamma_vals = np.arange(0.0, 1.0 + grid_resolution, grid_resolution)
@@ -2011,6 +2013,7 @@ def run_phase3(
     grid_resolution: float = 0.01,
     omission_2d_resolution: float = 0.05,
     split: str = 'calibration',
+    delta: float = 0.05,
 ):
     """
     Run Phase 3: Conformal risk control threshold selection.
@@ -2023,6 +2026,7 @@ def run_phase3(
         grid_resolution: Threshold grid resolution for 1D (default: 0.01)
         omission_2d_resolution: Grid resolution for 2D omission (default: 0.05)
         split: Which split to use ('calibration' or 'all'). Default: 'calibration'
+        delta: LTT-FST FWER level for the omission controller (default: 0.05)
     """
     logger.info("="*80)
     logger.info("Phase 3: Conformal Risk Control (Binary Instance Losses)")
@@ -2094,6 +2098,16 @@ def run_phase3(
         grid_resolution=omission_2d_resolution,
     )
 
+    # Controller B (primary, rigorous): LTT-FST over the same (tau, gamma) grid.
+    logger.info("\n" + "-"*40)
+    logger.info(f"Computing LTT-FST omission thresholds (delta={delta})...")
+    omission_ltt_fst_result = select_omission_threshold_ltt_fst(
+        documents,
+        alpha=alpha_omit,
+        delta=delta,
+        grid_resolution=omission_2d_resolution,
+    )
+
     # Also compute binary loss thresholds (secondary metric)
     logger.info("\n" + "-"*40)
     logger.info("Computing 2D binary loss thresholds (secondary)...")
@@ -2145,6 +2159,7 @@ def run_phase3(
         'factuality_uncalibrated_baseline': factuality_uncalibrated_result,
         'factuality_devset_baseline': factuality_devset_result,
         'omission': omission_result,  # Fractional loss (default)
+        'omission_ltt_fst': omission_ltt_fst_result,  # LTT-FST: Pr(R <= alpha) >= 1 - delta
         'omission_binary': omission_binary_result,  # Binary loss (secondary)
         'omission_1d_baseline': omission_1d_result,
         'omission_product_baseline': omission_product_result,
@@ -2155,6 +2170,7 @@ def run_phase3(
             'alpha_omit': alpha_omit,
             'grid_resolution': grid_resolution,
             'omission_2d_resolution': omission_2d_resolution,
+            'delta': delta,
             'n_calibration_docs': len(documents),
             'min_feasible_alpha': min_alpha,
             'omission_loss_type': 'fractional',
@@ -2199,6 +2215,11 @@ def run_phase3(
     logger.info(f"  Binary risk: {omission_result['binary_empirical_risk']:.4f} (adjusted: {omission_result['binary_adjusted_risk']:.4f})")
     logger.info(f"  Feasible: {omission_result['is_feasible']}")
     logger.info(f"  Feasible set size: {omission_result['feasible_set_size']}")
+    logger.info(f"LTT-FST (tau*, gamma*) = ({omission_ltt_fst_result['tau']:.3f}, "
+                f"{omission_ltt_fst_result['gamma']:.3f}); certified "
+                f"{omission_ltt_fst_result['n_certified']}/{omission_ltt_fst_result['grid_size']}, "
+                f"p_HB={omission_ltt_fst_result['hb_pvalue']:.4f}, "
+                f"workload={omission_ltt_fst_result['workload']:.1f}")
     logger.info(f"Binary 2D thresholds (τ*, γ*) = ({omission_binary_result['tau']:.3f}, {omission_binary_result['gamma']:.3f}) [secondary]")
     logger.info(f"  Binary adjusted risk: {omission_binary_result['adjusted_risk']:.4f}")
     logger.info(f"  Binary workload: {omission_binary_result['workload']:.1f}")
@@ -2263,6 +2284,12 @@ def main():
         help='2D grid resolution for omission (default: 0.05)'
     )
     parser.add_argument(
+        '--delta',
+        type=float,
+        default=0.05,
+        help='LTT-FST FWER level delta for the omission controller (default: 0.05)'
+    )
+    parser.add_argument(
         '--dataset',
         choices=["aci", "meq", "bhc", "cxr", "pubmed", "privds"],  # All datasets
         required=True,
@@ -2291,6 +2318,7 @@ def main():
         grid_resolution=args.grid_resolution,
         omission_2d_resolution=args.omission_2d_resolution,
         split=args.split,
+        delta=args.delta,
     )
 
 
