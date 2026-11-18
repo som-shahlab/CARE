@@ -38,8 +38,9 @@ paper/source/
 # Clinician study (may contain PHI)
 paper/clinician_study/
 
-# Rebuttal / review-response material (kept locally, not part of reproduction)
-paper/rebuttal/
+# Rebuttal / review-response material (kept locally); only the analysis scripts (*.py) are published
+paper/rebuttal/*
+!paper/rebuttal/*.py
 
 # Vendored AlignScore checkout (~1.9GB model checkpoint; install separately, see README)
 AlignScore/
