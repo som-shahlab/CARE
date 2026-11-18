@@ -165,6 +165,9 @@ def noise_structure():
     sets = {"ACI-Bench": ("ACI_Bench", "ACI (3)", 0.70), "MIMIC-BHC": ("MIMIC_IV_BHC", "BHC (1)", 0.60),
             "MIMIC-CXR": ("MIMIC_III_CXR", "CXR", 0.50)}
     cd = ROOT / "paper" / "clinician_study"
+    if not cd.exists():  # clinician annotations are not distributed (may contain PHI)
+        print(f"skip noise_structure: {cd} not present")
+        return None
     out = {}
     for ds, (folder, f, lam) in sets.items():
         df = pd.read_csv(cd / f"annotation_validation_corrected.xlsx - {f}.csv", usecols=range(14))
@@ -216,7 +219,7 @@ if __name__ == "__main__":
               f"{r['multi_halluc_share_of_halluc_docs']:.0%}; calibrations checked vs submitted code: "
               f"{r['n_calibrations_checked_against_submitted_code']}")
     print("\nWhere oracle-clinician disagreements fall (summary sentences matched to phase_2; lambda = Table 9):")
-    for ds, r in struct.items():
+    for ds, r in (struct or {}).items():
         for cat, v in r["categories"].items():
             if v["n"]:
                 print(f"  {ds:<10} {cat:<24} n={v['n']:>4}  flagged at lambda={r['lam']}: {v['flagged_at_lambda']:.2f}  "
