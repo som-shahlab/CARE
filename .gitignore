@@ -73,3 +73,11 @@ Thumbs.db
 
 # shell scripts
 slurm/*
+
+# ML4H camera-ready paper source (kept locally)
+paper/ML4H_2026___CARE/
+# Superseded result snapshots
+paper/outputs/*.stale_*.json
+# Local agent plans and scratch (contain local paths)
+docs/superpowers/
+.superpowers/
