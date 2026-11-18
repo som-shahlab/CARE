@@ -1,14 +1,16 @@
 # LTT-FST with a split-learned ordering (experimental)
 
-Self-contained experiment. Nothing under `care/` or `paper/` is modified or
-imported. Delete this folder to return to the original code exactly.
+Ablation of the LTT-FST ordering and deploy rule. It reuses the HB p-value from
+`care.calibration` and the data root from `care.config`, and is run by
+`reproduce.sh` (App. B).
 
 ## Why
 
 The paper (Sec 3.4, App B.1) describes LTT-FST with Hoeffding–Bentkus (HB)
-p-values over a fixed τ+γ-ascending ordering. The repo's implementation
-(`care/calibration.py:select_omission_threshold_fst_fractional`) instead uses a
-CRC-bound scan in descending order, so it doesn't implement that guarantee. Run
+p-values over a fixed τ+γ-ascending ordering. CARE now implements exactly that
+(`care.calibration.select_omission_threshold_ltt_fst`). The submission-time code
+(`select_omission_threshold_fst_fractional`, kept as a legacy comparator) used a
+CRC-bound scan in descending order, which did not carry the LTT guarantee. Run
 faithfully, the τ+γ ordering stops early and loses power.
 
 LTT allows any ordering chosen independently of the data used for testing.
@@ -45,7 +47,7 @@ comparability with the paper's tables. **Robustness check:** float-grid fix
 
 ## Comparators (same resplits)
 
-- **Code-FST:** the repo's current implementation (reproduces the paper's numbers).
+- **Code-FST:** the legacy submission-time CRC-bound scan (reproduces the submitted paper's numbers).
 - **LTT τ+γ (last):** the paper's procedure as written.
 - **LTT τ+γ (min-WL):** the same, but deploying the min-workload certified cell.
 - **1D-Imp, Product, Union:** the paper's CRC baselines (0.05 grid, as published).

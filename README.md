@@ -118,7 +118,9 @@ python3 -m care.evaluation  --dataset mydata
 
 Phase 3 writes the LTT-FST omission thresholds to `omission_ltt_fst` in
 `conformal_thresholds.json` (`select_omission_threshold_ltt_fst`; `--delta`,
-default 0.05). The `omission` key holds the 2D-Joint comparator. No human
+default 0.05). The `omission` key holds the 2D-Joint comparator, and Phase 4
+(`care.evaluation`) currently evaluates that `omission` key, not LTT-FST; use
+the `omission_ltt_fst` values (as stored, unrounded) for guaranteed thresholds. No human
 references are required at test time — only offline for calibration.
 
 ## Datasets
