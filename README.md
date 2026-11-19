@@ -2,6 +2,10 @@
 
 Post-hoc conformal risk control for clinical summarization with **finite-sample, distribution-free guarantees** on factual error risk and omission risk.
 
+<p align="center">
+  <img src="assets/care_overview.png" alt="CARE pipeline: (a) oracle labeling and judge scoring, (b) conformal risk control calibration, (c) deployment producing a CARE-verified medical summary" width="100%">
+</p>
+
 ## Overview
 
 CARE is a **post-hoc safety layer** that overlays calibrated risk signals on black-box LLM summaries without retraining:
