@@ -159,3 +159,14 @@ def test_reported_thresholds_are_grid_values():
 def test_empty_documents_raises():
     with pytest.raises(ValueError, match="at least one calibration document"):
         select_omission_threshold_ltt_fst([], ALPHA, DELTA)
+
+
+def test_tau_plus_gamma_ties_follow_tau_ascending_on_real_grid():
+    # On the 0.05 grid float sums like 0.05+0.25 vs 0.25+0.05 differ in the last bit;
+    # ties must still be broken by tau ascending (the documented order).
+    vals = np.arange(0.0, 1.0 + 0.05, 0.05)
+    order = ltt_fst_ordering(vals, vals, "tau_plus_gamma")
+    assert [i + j for i, j in order] == sorted(i + j for i, j in order)
+    for s in range(2 * len(vals) - 1):
+        taus = [i for i, j in order if i + j == s]
+        assert taus == sorted(taus), (s, taus)

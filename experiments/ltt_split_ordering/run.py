@@ -61,7 +61,7 @@ def split_ordering(cells, L, W, cal, resplit):
     ord_idx, cert_idx = perm[:n_ord], perm[n_ord:]
     r_ord, w_ord = L[ord_idx].mean(0), W[ord_idx].mean(0)
     cand = [c for c in range(len(cells)) if r_ord[c] <= ALPHA]
-    cand.sort(key=lambda c: (-w_ord[c], cells[c][0] + cells[c][1], cells[c][0], cells[c][1]))
+    cand.sort(key=lambda c: (-w_ord[c], round(cells[c][0] + cells[c][1], 9), cells[c][0], cells[c][1]))
     certified = fixed_sequence(L[cert_idx], cand, ALPHA, DELTA)
     if not certified:
         return cells.index((0.0, 0.0)), False
@@ -76,8 +76,8 @@ def run_dataset(path, rnd):
     n = len(docs)
     n_cal = int(n * CAL_FRAC)
     zero = cells.index((0.0, 0.0))
-    asc = sorted(range(len(cells)), key=lambda c: (cells[c][0] + cells[c][1], cells[c][0], cells[c][1]))
-    desc = sorted(range(len(cells)), key=lambda c: (-(cells[c][0] + cells[c][1]), -cells[c][0], -cells[c][1]))
+    asc = sorted(range(len(cells)), key=lambda c: (round(cells[c][0] + cells[c][1], 9), cells[c][0], cells[c][1]))
+    desc = sorted(range(len(cells)), key=lambda c: (-round(cells[c][0] + cells[c][1], 9), -cells[c][0], -cells[c][1]))
 
     def union_eval(ti, gi, test):
         ls, ws = [], []

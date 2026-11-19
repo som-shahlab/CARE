@@ -648,7 +648,9 @@ def ltt_fst_ordering(tau_vals: np.ndarray, gamma_vals: np.ndarray, ordering: str
     """
     idx = [(i, j) for i in range(len(tau_vals)) for j in range(len(gamma_vals))]
     if ordering == "tau_plus_gamma":
-        idx.sort(key=lambda c: (tau_vals[c[0]] + gamma_vals[c[1]], tau_vals[c[0]], gamma_vals[c[1]]))
+        # Round the sum so grid cells with equal tau+gamma tie exactly (float sums such as
+        # 0.05+0.25 vs 0.25+0.05 differ in the last bit); ties then fall to tau ascending.
+        idx.sort(key=lambda c: (round(float(tau_vals[c[0]] + gamma_vals[c[1]]), 9), tau_vals[c[0]], gamma_vals[c[1]]))
     elif ordering == "lex_tau":
         idx.sort(key=lambda c: (tau_vals[c[0]], gamma_vals[c[1]]))
     elif ordering == "diagonal":
