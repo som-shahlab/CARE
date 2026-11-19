@@ -5,19 +5,19 @@
   "cross_dataset": {
     "ACI_Bench": {
       "ACI_Bench": {
-        "violation": 0.051750000000000004
+        "violation": 0.05102627627627628
       },
       "MIMIC_IV_BHC": {
-        "violation": 0.0519275772432996
+        "violation": 0.051685775652813674
       },
       "MIMIC_III_CXR": {
         "violation": 0.0041
       },
       "PRIV_DS": {
-        "violation": 0.04550785506956414
+        "violation": 0.045401447500361174
       },
       "SumPubMed": {
-        "violation": 0.05547841051799852
+        "violation": 0.0554362842436349
       }
     },
     "MIMIC_IV_BHC": {
@@ -92,7 +92,7 @@
   "length_shift": {
     "ACI_Bench": {
       "short\u2192long": {
-        "omit_violation": 0.03682795698924732,
+        "omit_violation": 0.03574014336917563,
         "fact_violation": 0.11387096774193547
       },
       "long\u2192short": {
