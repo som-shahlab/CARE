@@ -118,11 +118,12 @@ python3 -m care.calibration --dataset mydata --alpha-fact 0.15 --alpha-omit 0.15
 python3 -m care.evaluation  --dataset mydata
 ```
 
-Phase 3 writes the LTT-FST omission thresholds to `omission_ltt_fst` in
+Phase 3 writes the deployed LTT-FST omission thresholds to the `omission` key of
 `conformal_thresholds.json` (`select_omission_threshold_ltt_fst`; `--delta`,
-default 0.05). The `omission` key holds the 2D-Joint comparator, and Phase 4
-(`care.evaluation`) currently evaluates that `omission` key, not LTT-FST; use
-the `omission_ltt_fst` values (as stored, unrounded) for guaranteed thresholds. No human
+default 0.05; `omission_ltt_fst` is an alias). The 2D-Joint comparator is stored
+under `omission_2d_joint`. Phase 4 (`care.evaluation`) deploys the LTT-FST entry;
+Phase 3 files written before LTT-FST hold only 2D-Joint, and Phase 4 asks you to
+re-run Phase 3 for them. Use the stored, unrounded values. No human
 references are required at test time — only offline for calibration.
 
 ## Datasets
@@ -161,8 +162,9 @@ All datasets use α = 0.15, seed = 42, 70/30 cal/test split.
   but LTT does not rely on monotonicity along the ordering. With R̂ = 0 the
   p-value is (1 − α)ⁿ, so at α = 0.15, δ = 0.05 nothing is certifiable for
   n < 19; the controller then falls back to (0, 0) (surface everything).
-- The **2D-Joint** controller (workload-minimizing pair from the 2D feasible
-  set, no multiple-testing correction) is kept as a heuristic comparator.
+- The **2D-Joint** controller (workload-minimizing pair among all cells that pass
+  the CRC bound) is kept only as a comparator. Selecting over the grid after
+  seeing the data voids the CRC argument, so it has **no formal guarantee**.
 
 Implementation: `care.calibration.select_omission_threshold_ltt_fst`
 (primary), `select_omission_threshold_2d_fractional` (comparator), and the
