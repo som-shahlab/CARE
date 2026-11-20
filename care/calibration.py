@@ -14,12 +14,19 @@ Controller A (Factuality - Red Flagging):
 Controller B (Omission - Purple Surfacing):
 - True omissions: O_true(X) = {u : Y_imp(u)=1 AND Y_cov(u)=0}
 - Surfaced set: O_{τ,γ}(X) = {u : p̂_imp(u) ≥ τ AND p̂_non-cov(u) ≥ γ}
-- Instance loss: L_omit^inst(τ,γ; X) = 1{∃u ∈ O_true: u ∉ O_{τ,γ}(X)}
-- 2D joint calibration: Find (τ*, γ*) = lexicographic max over feasible set
+- Loss (default): fraction of true omissions not surfaced, in [0, 1]. Monotone:
+  lowering τ or γ surfaces a superset, so the loss cannot increase.
+- Deployed rule: Learn-Then-Test fixed-sequence testing (LTT-FST) over the (τ, γ)
+  grid, Hoeffding-Bentkus p-values, data-independent τ+γ-ascending order,
+  minimum-workload certified cell (select_omission_threshold_ltt_fst).
+- 2D-Joint (min-workload cell among all cells passing the CRC bound) is kept only
+  as a comparator: selecting over the grid voids the CRC argument, so it carries
+  no formal guarantee.
 
-Guarantees (plan.tex):
-- With probability 1-δ, test-time risk is controlled at level α
-- Finite-sample, distribution-free guarantees
+Guarantees (finite-sample, distribution-free, calibration and test docs i.i.d.):
+- Controller A: E[L_fact(λ*)] <= α_fact (scalar CRC, nested sets).
+- Controller B: Pr( R_omit(τ*, γ*) <= α_omit ) >= 1 - δ over the calibration draw,
+  where R_omit is the expected test-document loss.
 """
 
 import argparse
@@ -488,17 +495,16 @@ def select_omission_threshold_2d_fractional(
     grid_resolution: float = 0.05,
 ) -> Dict[str, Any]:
     """
-    2D joint calibration for omissions using FRACTIONAL loss.
+    2D-Joint comparator for omissions using FRACTIONAL loss. NO FORMAL GUARANTEE.
 
     Same grid search as select_omission_threshold_2d, but uses fractional loss:
     L = (# missed omissions) / (# total omissions per doc)
 
-    This is the default for Controller B. Fractional loss:
-    - Equals binary loss when k=1 (single omission per doc)
-    - Degrades gracefully for high-k docs (many omissions)
-    - Is bounded in [0,1] so CRC guarantees hold
-
-    Guarantee: E[fraction of missed omissions per doc] ≤ α
+    Deploys the minimum-workload cell among ALL grid cells whose CRC bound
+    (n/(n+1)) R_hat + 1/(n+1) is <= alpha. Choosing the best of many cells after
+    seeing the calibration data voids the scalar-CRC argument (the cells are not
+    nested), so E[L] <= alpha is NOT guaranteed. Kept only as a comparator; the
+    deployed controller is select_omission_threshold_ltt_fst.
 
     Args:
         documents: List of calibration documents
@@ -583,6 +589,7 @@ def select_omission_threshold_2d_fractional(
         'tau': float(selected_tau),
         'gamma': float(selected_gamma),
         'threshold_type': 'omission_2d_fractional',
+        'has_formal_guarantee': False,
         'loss_type': 'fractional',
         'alpha': alpha,
         'n_docs': n,
@@ -750,6 +757,22 @@ def select_omission_threshold_ltt_fst(
     }
 
 
+def deployed_omission_thresholds(thresholds: Dict[str, Any]) -> Dict[str, Any]:
+    """The LTT-FST omission entry of a Phase 3 conformal_thresholds.json.
+
+    Files written by current code store LTT-FST under 'omission' (alias
+    'omission_ltt_fst'). Older files stored 2D-Joint under 'omission' and LTT-FST
+    under 'omission_ltt_fst'; the latter is returned. Files with only 2D-Joint
+    raise, since that rule has no formal guarantee.
+    """
+    for key in ('omission', 'omission_ltt_fst'):
+        entry = thresholds.get(key)
+        if entry and str(entry.get('threshold_type', '')).startswith('omission_ltt_fst'):
+            return entry
+    raise ValueError("No LTT-FST omission thresholds in this Phase 3 file "
+                     "(it predates LTT-FST); re-run Phase 3.")
+
+
 def select_omission_threshold_fst_fractional(
     documents: List[Dict[str, Any]],
     alpha: float,
@@ -879,11 +902,14 @@ def select_omission_threshold_2d(
     grid_resolution: float = 0.05,
 ) -> Dict[str, Any]:
     """
-    2D joint calibration for omissions (plan.tex proposed method).
+    2D-Joint comparator for omissions, binary loss. NO FORMAL GUARANTEE.
 
     1. Compute risk for each (τ, γ) pair on 2D grid
     2. Find feasible set F(α) = {(τ,γ): adjusted_risk ≤ α}
     3. Select (τ*, γ*) that MINIMIZES workload (sentences surfaced)
+
+    Selecting over the grid after seeing the data voids the CRC argument; use
+    select_omission_threshold_ltt_fst for a guaranteed controller.
 
     Args:
         documents: List of calibration documents
@@ -966,6 +992,7 @@ def select_omission_threshold_2d(
         'tau': float(selected_tau),
         'gamma': float(selected_gamma),
         'threshold_type': 'omission_2d',
+        'has_formal_guarantee': False,
         'alpha': alpha,
         'n_docs': n,
         'empirical_risk': float(emp_risk),
@@ -1614,6 +1641,7 @@ def run_alpha_sweep(
     alpha_values: List[float],
     grid_resolution: float = 0.05,
     compute_ci: bool = True,
+    delta: float = 0.05,
 ) -> List[Dict[str, Any]]:
     """
     Run calibration for multiple alpha values to generate calibration curves.
@@ -1629,8 +1657,10 @@ def run_alpha_sweep(
         # Factuality threshold selection
         fact_result = select_factuality_threshold(documents, alpha, grid_resolution=0.01)
 
-        # Omission threshold selection (2D Fractional - default)
-        omit_result = select_omission_threshold_2d_fractional(documents, alpha, grid_resolution=grid_resolution)
+        # Omission threshold selection (LTT-FST - deployed controller)
+        omit_result = select_omission_threshold_ltt_fst(documents, alpha, delta=delta, grid_resolution=grid_resolution)
+        # 2D-Joint comparator (no formal guarantee)
+        omit_joint = select_omission_threshold_2d_fractional(documents, alpha, grid_resolution=grid_resolution)
 
         # Omission (2D Binary - secondary)
         omit_binary = select_omission_threshold_2d(documents, alpha, grid_resolution=grid_resolution)
@@ -1700,13 +1730,22 @@ def run_alpha_sweep(
                 'threshold': float(lambda_thresh),
             },
             'omission': {
-                'risk': float(omit_result['adjusted_risk']),
+                'risk': float(omit_result['empirical_risk']),
                 'empirical_risk': float(np.mean(omit_frac_losses)),
-                'holds': bool(omit_result['adjusted_risk'] <= alpha),
+                'holds': bool(omit_result['is_feasible']),  # certified by LTT-FST at (alpha, delta)
+                'hb_pvalue': float(omit_result['hb_pvalue']),
                 'workload': float(omit_surfaced / n),
                 'tau': float(tau_thresh),
                 'gamma': float(gamma_thresh),
                 'loss_type': 'fractional',
+                'method': omit_result['threshold_type'],
+            },
+            'omission_2d_joint': {
+                'risk': float(omit_joint['adjusted_risk']),
+                'workload': float(omit_joint['workload']),
+                'tau': float(omit_joint['tau']),
+                'gamma': float(omit_joint['gamma']),
+                'has_formal_guarantee': False,
             },
             'omission_binary': {
                 'risk': float(omit_binary['adjusted_risk']),
@@ -1972,7 +2011,7 @@ def generate_calibration_summary(
 | Controller | Threshold | Target α | Calibration Risk |
 |------------|-----------|----------|------------------|
 | **Factuality** | λ* = {selected_lambda:.2f} | ≤{factuality_result['alpha']*100:.0f}% | {factuality_result['adjusted_risk']*100:.1f}% |
-| **Omission** | τ* = {selected_tau:.2f}, γ* = {selected_gamma:.2f} | ≤{omission_result['alpha']*100:.0f}% | {omission_result['adjusted_risk']*100:.1f}% |
+| **Omission** (LTT-FST, δ = {omission_result['delta']:.2f}) | τ* = {selected_tau:.2f}, γ* = {selected_gamma:.2f} | ≤{omission_result['alpha']*100:.0f}% | {omission_result['empirical_risk']*100:.1f}% (p_HB = {omission_result['hb_pvalue']:.3f}) |
 
 ## Expected Workload
 
@@ -1989,7 +2028,7 @@ def generate_calibration_summary(
 ## Interpretation
 
 - **Factuality**: Expect ≤{factuality_result['alpha']*100:.0f}% of notes to have a missed hallucination
-- **Omission**: Expect ≤{omission_result['alpha']*100:.0f}% of notes to have a missed important omission
+- **Omission**: With probability ≥{(1 - omission_result['delta'])*100:.0f}% over the calibration set, the expected fraction of true omissions missed per note is ≤{omission_result['alpha']*100:.0f}%
 
 ## Files Generated
 - `alpha_impact.png` - How α affects thresholds and workload
@@ -2090,23 +2129,23 @@ def run_phase3(
     factuality_devset_result = select_factuality_threshold_devset(
         documents, alpha=alpha_fact, grid_resolution=grid_resolution)
 
-    # Controller B: Omission (2D joint calibration with fractional loss - DEFAULT)
+    # Controller B: Omission, LTT-FST over the (tau, gamma) grid (DEPLOYED).
     logger.info("\n" + "="*80)
-    logger.info("Controller B: Omission Surfacing (2D Fractional Loss - Default)")
+    logger.info(f"Controller B: Omission Surfacing (LTT-FST, delta={delta})")
     logger.info("="*80)
-    omission_result = select_omission_threshold_2d_fractional(
-        documents,
-        alpha=alpha_omit,
-        grid_resolution=omission_2d_resolution,
-    )
-
-    # Controller B (primary, rigorous): LTT-FST over the same (tau, gamma) grid.
-    logger.info("\n" + "-"*40)
-    logger.info(f"Computing LTT-FST omission thresholds (delta={delta})...")
-    omission_ltt_fst_result = select_omission_threshold_ltt_fst(
+    omission_result = select_omission_threshold_ltt_fst(
         documents,
         alpha=alpha_omit,
         delta=delta,
+        grid_resolution=omission_2d_resolution,
+    )
+
+    # 2D-Joint comparator (no formal guarantee)
+    logger.info("\n" + "-"*40)
+    logger.info("Computing 2D-Joint comparator (no formal guarantee)...")
+    omission_2d_joint_result = select_omission_threshold_2d_fractional(
+        documents,
+        alpha=alpha_omit,
         grid_resolution=omission_2d_resolution,
     )
 
@@ -2160,8 +2199,9 @@ def run_phase3(
         'factuality': factuality_result,
         'factuality_uncalibrated_baseline': factuality_uncalibrated_result,
         'factuality_devset_baseline': factuality_devset_result,
-        'omission': omission_result,  # Fractional loss (default)
-        'omission_ltt_fst': omission_ltt_fst_result,  # LTT-FST: Pr(R <= alpha) >= 1 - delta
+        'omission': omission_result,  # LTT-FST (deployed): Pr(R <= alpha) >= 1 - delta
+        'omission_ltt_fst': omission_result,  # alias, kept for older readers
+        'omission_2d_joint': omission_2d_joint_result,  # comparator, no formal guarantee
         'omission_binary': omission_binary_result,  # Binary loss (secondary)
         'omission_1d_baseline': omission_1d_result,
         'omission_product_baseline': omission_product_result,
@@ -2187,7 +2227,7 @@ def run_phase3(
     # Generate visualizations via alpha sweep
     logger.info("\nRunning alpha sweep for visualizations...")
     alpha_values = list(np.arange(0.05, 0.55, 0.05))
-    sweep_results = run_alpha_sweep(documents, alpha_values)
+    sweep_results = run_alpha_sweep(documents, alpha_values, delta=delta)
 
     # Save sweep results
     sweep_file = output_dir / 'alpha_sweep_results.json'
@@ -2212,16 +2252,14 @@ def run_phase3(
                 f"risk={factuality_devset_result['empirical_risk']:.4f}, "
                 f"workload={factuality_devset_result['workload']:.1f}")
     logger.info("")
-    logger.info(f"Omission thresholds (τ*, γ*) = ({omission_result['tau']:.3f}, {omission_result['gamma']:.3f}) [fractional loss]")
-    logger.info(f"  Fractional risk: {omission_result['empirical_risk']:.4f} (adjusted: {omission_result['adjusted_risk']:.4f} ≤ {alpha_omit})")
-    logger.info(f"  Binary risk: {omission_result['binary_empirical_risk']:.4f} (adjusted: {omission_result['binary_adjusted_risk']:.4f})")
-    logger.info(f"  Feasible: {omission_result['is_feasible']}")
-    logger.info(f"  Feasible set size: {omission_result['feasible_set_size']}")
-    logger.info(f"LTT-FST (tau*, gamma*) = ({omission_ltt_fst_result['tau']:.3f}, "
-                f"{omission_ltt_fst_result['gamma']:.3f}); certified "
-                f"{omission_ltt_fst_result['n_certified']}/{omission_ltt_fst_result['grid_size']}, "
-                f"p_HB={omission_ltt_fst_result['hb_pvalue']:.4f}, "
-                f"workload={omission_ltt_fst_result['workload']:.1f}")
+    logger.info(f"Omission (LTT-FST) (τ*, γ*) = ({omission_result['tau']:.3f}, {omission_result['gamma']:.3f}); "
+                f"certified {omission_result['n_certified']}/{omission_result['grid_size']}, "
+                f"risk={omission_result['empirical_risk']:.4f}, p_HB={omission_result['hb_pvalue']:.4f}, "
+                f"workload={omission_result['workload']:.1f}")
+    if not omission_result['is_feasible']:
+        logger.warning("  LTT-FST certified no cell; deployed the fallback (0, 0), which surfaces everything.")
+    logger.info(f"2D-Joint comparator (no guarantee) (τ, γ) = ({omission_2d_joint_result['tau']:.3f}, "
+                f"{omission_2d_joint_result['gamma']:.3f}), workload={omission_2d_joint_result['workload']:.1f}")
     logger.info(f"Binary 2D thresholds (τ*, γ*) = ({omission_binary_result['tau']:.3f}, {omission_binary_result['gamma']:.3f}) [secondary]")
     logger.info(f"  Binary adjusted risk: {omission_binary_result['adjusted_risk']:.4f}")
     logger.info(f"  Binary workload: {omission_binary_result['workload']:.1f}")

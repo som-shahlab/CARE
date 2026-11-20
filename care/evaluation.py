@@ -43,6 +43,8 @@ from care.calibration import (
     select_omission_threshold_product,
     select_omission_threshold_score_gated,
     select_omission_threshold_union_bound,
+    select_omission_threshold_ltt_fst,
+    deployed_omission_thresholds,
     compute_product_loss_fractional,
     compute_omission_loss_fractional,
 )
@@ -324,9 +326,12 @@ def evaluate_guarantees(
     alpha_omit: float,
 ) -> Dict[str, Any]:
     """
-    Evaluate whether CRC guarantees hold on test set.
+    Empirical test-set check of both controllers.
 
-    CRC guarantees: E[L^inst] ≤ α
+    Factuality (scalar CRC) guarantees E[L_fact] <= alpha_fact. Omission (LTT-FST)
+    guarantees Pr(R_omit <= alpha_omit) >= 1 - delta over the calibration draw. On one
+    test set we can only compare the mean test loss with alpha; this is a check,
+    not a proof.
 
     Args:
         factuality_results: Results from apply_factuality_controller
@@ -406,6 +411,7 @@ def run_alpha_sweep_test(
     alpha_values: List[float],
     grid_resolution: float = 0.05,
     compute_ci: bool = True,
+    delta: float = 0.05,
 ) -> List[Dict[str, Any]]:
     """
     Run proper out-of-sample test evaluation for multiple alpha values.
@@ -439,7 +445,7 @@ def run_alpha_sweep_test(
     for alpha in tqdm(alpha_values, desc="Alpha sweep"):
         # CALIBRATE thresholds on CALIBRATION set
         fact_result = select_factuality_threshold(calibration_docs, alpha)
-        omit_result = select_omission_threshold_2d_fractional(calibration_docs, alpha, grid_resolution)
+        omit_result = select_omission_threshold_ltt_fst(calibration_docs, alpha, delta=delta, grid_resolution=grid_resolution)
 
         # Calibrate Controller A baselines
         fact_uncal = select_factuality_threshold_uncalibrated(calibration_docs, alpha)
@@ -612,7 +618,8 @@ def run_alpha_sweep_test(
                 'workload': float(omit_surfaced / n_test),
                 'tau': float(tau_thresh),
                 'gamma': float(gamma_thresh),
-                'calib_risk': float(omit_result['adjusted_risk']),
+                'calib_risk': float(omit_result['empirical_risk']),
+                'certified': bool(omit_result['is_feasible']),
                 'loss_type': 'fractional',
                 'precision': float(omit_true_omissions_surfaced / omit_surfaced) if omit_surfaced > 0 else 0.0,
                 'recall': float(omit_true_omissions_surfaced / omit_true_omissions_total) if omit_true_omissions_total > 0 else 1.0,
@@ -1070,8 +1077,9 @@ def run_phase4(
 
     # Extract thresholds
     lambda_threshold = thresholds['factuality']['threshold']
-    tau_threshold = thresholds['omission']['tau']
-    gamma_threshold = thresholds['omission']['gamma']
+    omission_thresholds = deployed_omission_thresholds(thresholds)  # LTT-FST
+    tau_threshold = omission_thresholds['tau']
+    gamma_threshold = omission_thresholds['gamma']
     alpha_fact = thresholds['config']['alpha_fact']
     alpha_omit = thresholds['config']['alpha_omit']
 
