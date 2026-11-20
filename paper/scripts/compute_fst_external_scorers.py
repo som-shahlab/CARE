@@ -5,7 +5,7 @@ Mirrors compute_external_scorer_results.py but runs FST calibration in
 place of the existing crc/dev/maxf1 trio. Re-scores docs via the same
 external scorer families (NLI, BERT cosine, AlignScore) — this is the
 GPU-heavy part. Then runs 100 resplits per (dataset, scorer) with FST
-τ+γ-descending calibration.
+LTT-FST calibration (care.calibration: HB p-values, τ+γ ascending, min-workload certified cell).
 
 Output: paper/outputs/fst_external_scorer_results.json
 """
@@ -16,6 +16,7 @@ import numpy as np
 from pathlib import Path
 from tqdm import tqdm
 
+from care.calibration import select_omission_threshold_ltt_fst
 from care.config import CANONICAL_DATA_ROOT as DATA_ROOT, DATASETS, PAPER_OUTPUT_DIR as OUTPUT_DIR
 
 # Import scoring functions from the existing script (avoids duplicating
@@ -27,7 +28,7 @@ from compute_external_scorer_results import (
     score_nli_factuality, score_nli_coverage,
     score_embedding_factuality, score_embedding_coverage,
     score_alignscore_factuality, score_alignscore_coverage,
-    device,
+    apply_external_scores, device,
 )
 
 SEED = 42
@@ -80,16 +81,9 @@ def calibrate_factuality(cal_docs, alpha=ALPHA_FACT):
 
 
 def fst_calibrate_omission(cal_docs, alpha=ALPHA_OMIT):
-    n = len(cal_docs)
-    vals = np.arange(0.0, 1.0 + GRID_OMIT, GRID_OMIT)
-    cells = [(float(t), float(g)) for t in vals for g in vals]
-    cells.sort(key=lambda c: (-(c[0] + c[1]), -c[0], -c[1]))
-    for tau, gamma in cells:
-        losses = [compute_omission(d, tau, gamma)[0] for d in cal_docs]
-        adj = (n / (n + 1)) * np.mean(losses) + 1.0 / (n + 1)
-        if adj <= alpha:
-            return float(tau), float(gamma)
-    return 0.0, 0.0
+    """LTT-FST (care.calibration) on the scorer-replaced coverage_probs. Returns (tau, gamma)."""
+    r = select_omission_threshold_ltt_fst(cal_docs, alpha, grid_resolution=GRID_OMIT)
+    return r["tau"], r["gamma"]
 
 
 def evaluate(test_docs, lam, tau, gamma):
@@ -121,23 +115,9 @@ def load_docs(dataset):
     return [json.loads(line) for line in open(path)]
 
 
-def apply_external(docs, scorer, nli_tok, nli_model, emb_tok, emb_model, align):
-    scored = []
-    for doc in tqdm(docs, desc=f"Scoring ({scorer})", leave=False):
-        d = dict(doc)
-        if scorer == "nli_embed":
-            d["factuality_probs"] = score_nli_factuality(d, nli_tok, nli_model)
-            d["coverage_probs"] = score_nli_coverage(d, nli_tok, nli_model)
-        elif scorer == "embed_only":
-            d["factuality_probs"] = score_embedding_factuality(d, emb_tok, emb_model)
-            d["coverage_probs"] = score_embedding_coverage(d, emb_tok, emb_model)
-        elif scorer == "alignscore":
-            d["factuality_probs"] = score_alignscore_factuality(d, align)
-            d["coverage_probs"] = score_alignscore_coverage(d, align)
-        else:
-            raise ValueError(scorer)
-        scored.append(d)
-    return scored
+def apply_external(docs, scorer, nli_tok, nli_model, emb_tok, emb_model, align, ds_key=None):
+    """Shared, cached scoring from compute_external_scorer_results."""
+    return apply_external_scores(docs, scorer, nli_tok, nli_model, emb_tok, emb_model, align, ds_key=ds_key)
 
 
 def run_resplits(docs):
@@ -193,7 +173,7 @@ def main():
                 print(f"  [cached] {scorer}")
                 continue
             print(f"  --- {scorer} ---")
-            scored = apply_external(docs, scorer, nli_tok, nli_model, emb_tok, emb_model, align)
+            scored = apply_external(docs, scorer, nli_tok, nli_model, emb_tok, emb_model, align, ds_key=ds_key)
             summary, per_resplit = run_resplits(scored)
             all_results[key] = {
                 "dataset": ds_key, "label": meta["label"], "scorer": scorer,

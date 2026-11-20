@@ -32,6 +32,7 @@ from collections import OrderedDict
 from pathlib import Path
 from tqdm import tqdm
 
+from care.calibration import hb_pvalue
 from care.config import CANONICAL_DATA_ROOT as DATA_ROOT, DATASETS, PAPER_OUTPUT_DIR as OUTPUT_DIR
 
 
@@ -283,6 +284,50 @@ def calibrate_omission_union(cal_docs, alpha, grid=GRID_OMIT):
 
 
 # ---------------------------------------------------------------------------
+# Same (alpha, delta) high-probability guarantee as LTT-FST: scalar LTT with
+# Hoeffding-Bentkus p-values. Each scalar family is monotone, so fixed-sequence
+# testing runs permissive -> restrictive and deploys the last certified threshold.
+# ---------------------------------------------------------------------------
+DELTA_OMIT = 0.05
+
+
+def _hb_scalar(cal_docs, loss_fn, alpha, delta, grid=GRID_OMIT):
+    n = len(cal_docs)
+    best = 0.0
+    for thr in np.arange(0.0, 1.0 + grid, grid):
+        risk = float(np.mean([loss_fn(d, thr) for d in cal_docs]))
+        if hb_pvalue(risk, n, alpha) <= delta:
+            best = float(thr)
+        else:
+            break
+    return best
+
+
+def _noncov_loss(d, gamma):
+    true_omit = (np.array(d["importance_labels"]) == 1) & (np.array(d["coverage_labels"]) == 0)
+    n_true = true_omit.sum()
+    if n_true == 0:
+        return 0.0
+    surfaced = (1 - np.array(d["coverage_probs"])) >= gamma
+    return float((true_omit & ~surfaced).sum() / n_true)
+
+
+def calibrate_omission_1d_hb(cal_docs, alpha, delta=DELTA_OMIT):
+    return _hb_scalar(cal_docs, lambda d, t: compute_omission_1d(d, t)[0], alpha, delta)
+
+
+def calibrate_omission_product_hb(cal_docs, alpha, delta=DELTA_OMIT):
+    return _hb_scalar(cal_docs, lambda d, b: compute_omission_product(d, b)[0], alpha, delta)
+
+
+def calibrate_omission_union_hb(cal_docs, alpha, delta=DELTA_OMIT):
+    """Each gate at (alpha/2, delta/2); union bound gives (alpha, delta) for the intersection."""
+    tau = calibrate_omission_1d_hb(cal_docs, alpha / 2, delta / 2)
+    gamma = _hb_scalar(cal_docs, _noncov_loss, alpha / 2, delta / 2)
+    return tau, gamma
+
+
+# ---------------------------------------------------------------------------
 # Method registry: each entry maps calibration + evaluation for one baseline.
 # Adding a new baseline = adding one entry here.
 # ---------------------------------------------------------------------------
@@ -305,6 +350,18 @@ METHODS = OrderedDict([
     }),
     ("union_bound", {
         "calibrate": lambda cal: calibrate_omission_union(cal, ALPHA_OMIT),
+        "surface":   lambda doc, p: compute_omission_union(doc, p[0], p[1]),
+    }),
+    ("1d_imp_hb", {
+        "calibrate": lambda cal: (calibrate_omission_1d_hb(cal, ALPHA_OMIT),),
+        "surface":   lambda doc, p: compute_omission_1d(doc, p[0]),
+    }),
+    ("product_hb", {
+        "calibrate": lambda cal: (calibrate_omission_product_hb(cal, ALPHA_OMIT),),
+        "surface":   lambda doc, p: compute_omission_product(doc, p[0]),
+    }),
+    ("union_bound_hb", {
+        "calibrate": lambda cal: calibrate_omission_union_hb(cal, ALPHA_OMIT),
         "surface":   lambda doc, p: compute_omission_union(doc, p[0], p[1]),
     }),
     ("dev_tuned", {

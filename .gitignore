@@ -38,8 +38,9 @@ paper/source/
 # Clinician study (may contain PHI)
 paper/clinician_study/
 
-# Rebuttal / review-response material (kept locally, not part of reproduction)
-paper/rebuttal/
+# Rebuttal / review-response material (kept locally); only the analysis scripts (*.py) are published
+paper/rebuttal/*
+!paper/rebuttal/*.py
 
 # Vendored AlignScore checkout (~1.9GB model checkpoint; install separately, see README)
 AlignScore/
@@ -72,3 +73,16 @@ Thumbs.db
 
 # shell scripts
 slurm/*
+
+# ML4H camera-ready paper source (kept locally)
+paper/ML4H_2026___CARE/
+# Superseded result snapshots
+paper/outputs/*.stale_*.json
+# Local agent plans and scratch (contain local paths)
+docs/superpowers/
+.superpowers/
+
+# Not distributed: clinician-study aggregates (IRB) and ACI-Bench example text (licence)
+/paper/outputs/camera_ready/clinician_labels.tex
+/paper/outputs/camera_ready/confusion.tex
+/paper/outputs/camera_ready/example_aci.tex

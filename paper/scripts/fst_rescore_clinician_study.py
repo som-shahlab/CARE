@@ -30,7 +30,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 PAPER_DIR = PROJECT_ROOT / "paper"
 OUTPUT_DIR = PAPER_DIR / "outputs"
 CLINICIAN_DIR = PAPER_DIR / "clinician_study"
-DATA_ROOT = Path("/path/to/data")
+import os
+DATA_ROOT = Path(os.environ.get("CARE_DATA_ROOT", "/path/to/data"))
 
 CLINICIANS = [
     ("C1", "C1", "clinician_study_v2_C1.json", "clinician_study_v3_C1.json"),
@@ -38,9 +39,12 @@ CLINICIANS = [
     ("C3", "C3", "clinician_study_v2_C3.json", "clinician_study_v3_C3.json"),
 ]
 
+# two_d_joint / submitted_fst: submission-time operating points (kept to identify what clinicians saw).
+# fst: camera-ready LTT-FST thresholds from the canonical split (outputs/fst_thresholds.json).
+_FST = json.load(open(OUTPUT_DIR / "fst_thresholds.json"))
 THRESHOLDS = {
-    "ACI_Bench":     {"two_d_joint": (0.40, 0.40), "fst": (0.50, 0.30)},
-    "MIMIC_IV_BHC":  {"two_d_joint": (0.40, 0.50), "fst": (0.40, 0.50)},
+    ds: {"two_d_joint": tj, "submitted_fst": sf, "fst": (_FST[ds]["tau"], _FST[ds]["gamma"])}
+    for ds, tj, sf in [("ACI_Bench", (0.40, 0.40), (0.50, 0.30)), ("MIMIC_IV_BHC", (0.40, 0.50), (0.40, 0.50))]
 }
 
 PERM_ITERS = 20000
@@ -211,7 +215,7 @@ def main():
     scored = load_scored_docs()
 
     results = {}
-    for regime in ["recorded", "two_d_joint", "fst"]:
+    for regime in ["recorded", "two_d_joint", "submitted_fst", "fst"]:
         print(f"\nRegime: {regime}")
         rows = load_rows(scored, regime)
         agg = aggregate(rows)

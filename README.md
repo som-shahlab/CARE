@@ -22,6 +22,8 @@ pip install -e .                 # core: pipeline + main tables/figures
 pip install -e ".[scorers]"      # optional: non-LLM scorers (NLI/BERTScore/AlignScore) + cost table; GPU recommended
 ```
 
+Tests: `pip install -e ".[dev]" && pytest tests/`
+
 The optional external scorers also need AlignScore weights, installed separately
 (see https://github.com/yuh-zha/AlignScore) and pointed at via that library.
 
@@ -116,9 +118,12 @@ python3 -m care.calibration --dataset mydata --alpha-fact 0.15 --alpha-omit 0.15
 python3 -m care.evaluation  --dataset mydata
 ```
 
-The omission calibration in Phase 3 uses LTT-FST
-(`select_omission_threshold_fst_fractional`) as the primary controller. No
-human references are required at test time — only offline for calibration.
+Phase 3 writes the LTT-FST omission thresholds to `omission_ltt_fst` in
+`conformal_thresholds.json` (`select_omission_threshold_ltt_fst`; `--delta`,
+default 0.05). The `omission` key holds the 2D-Joint comparator, and Phase 4
+(`care.evaluation`) currently evaluates that `omission` key, not LTT-FST; use
+the `omission_ltt_fst` values (as stored, unrounded) for guaranteed thresholds. No human
+references are required at test time — only offline for calibration.
 
 ## Datasets
 
@@ -138,19 +143,30 @@ All datasets use α = 0.15, seed = 42, 70/30 cal/test split.
 - Flag set: F_λ(X) = {v : p̂_hall(v) ≤ λ}
 - Loss: L = 1{any unflagged hallucination exists}
 - λ* = smallest λ satisfying the CRC bound
+- L is monotone non-increasing in λ, so scalar CRC gives E[L] ≤ α with the
+  finite-sample (n + 1) correction
 
 **Omission Controller** — LTT-FST (primary):
 - Surfaced set: O_{τ,γ}(X) = {u : p̂_imp(u) ≥ τ AND (1 − p̂_cov(u)) ≥ γ}
 - Loss: fractional — n_missed / n_total omissions per document
-- (τ*, γ*) = first feasible cell along a data-independent (τ + γ)-descending
-  ordering. By Learn-Then-Test (Angelopoulos et al., 2021, Thm 1) with
-  fixed-sequence testing, this controls E[L] ≤ α with the finite-sample (n+1)
-  correction and **no Bonferroni penalty** (the ordering is data-independent).
+- Test order: grid cells sorted by τ + γ ascending (permissive → restrictive),
+  fixed before seeing data. Each cell's null H: R(τ, γ) > α is tested with a
+  Hoeffding–Bentkus p-value; testing stops at the first non-rejection.
+- Every certified cell satisfies **Pr( R(τ, γ) ≤ α ) ≥ 1 − δ simultaneously**
+  over the calibration draw (Learn-Then-Test, Angelopoulos et al., Thm 1;
+  fixed-sequence FWER control, no Bonferroni penalty). We deploy the certified
+  cell with the lowest mean calibration workload (`deploy="min_workload"`;
+  `"last"` reproduces the submitted paper). Defaults: α = 0.15, δ = 0.05.
+- The loss is monotone non-increasing as τ or γ decreases (more is surfaced),
+  but LTT does not rely on monotonicity along the ordering. With R̂ = 0 the
+  p-value is (1 − α)ⁿ, so at α = 0.15, δ = 0.05 nothing is certifiable for
+  n < 19; the controller then falls back to (0, 0) (surface everything).
 - The **2D-Joint** controller (workload-minimizing pair from the 2D feasible
   set, no multiple-testing correction) is kept as a heuristic comparator.
 
-Implementation: `care.calibration.select_omission_threshold_fst_fractional`
-(primary) and `select_omission_threshold_2d_fractional` (comparator).
+Implementation: `care.calibration.select_omission_threshold_ltt_fst`
+(primary), `select_omission_threshold_2d_fractional` (comparator), and the
+legacy CRC-bound scan `select_omission_threshold_fst_fractional` (comparison only).
 
 **Key finding**: Partially calibrated pipelines violate guarantees (up to 50%); marginal decompositions are valid but conservative; LTT-FST reaches the safety–efficiency Pareto frontier with rigorous finite-sample control.
 

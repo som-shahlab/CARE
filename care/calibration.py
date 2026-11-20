@@ -24,6 +24,7 @@ Guarantees (plan.tex):
 
 import argparse
 import json
+import math
 import sys
 import numpy as np
 from pathlib import Path
@@ -596,6 +597,159 @@ def select_omission_threshold_2d_fractional(
     }
 
 
+def hb_pvalue(risk_hat: float, n: int, alpha: float) -> float:
+    """
+    Hoeffding-Bentkus p-value for H: R > alpha, losses in [0, 1] (LTT, Angelopoulos et al.).
+
+        p = min( exp(-n h1(R_hat ∧ alpha, alpha)),  e · P[Bin(n, alpha) <= ceil(n R_hat)] )
+
+    with h1(a, b) = a log(a/b) + (1-a) log((1-a)/(1-b)). Super-uniform under H.
+    At R_hat = 0 this is (1 - alpha)^n, so at alpha = 0.15, delta = 0.05 nothing is
+    certifiable with n < 19.
+    """
+    r = min(max(risk_hat, 1e-12), alpha)
+    h1 = 0.0 if r >= alpha else r * math.log(r / alpha) + (1 - r) * math.log((1 - r) / (1 - alpha))
+    k = math.ceil(n * risk_hat - 1e-9)
+    binom_cdf = (sum(math.comb(n, j) * alpha**j * (1 - alpha) ** (n - j) for j in range(min(k, n) + 1))
+                 if k >= 0 else 0.0)
+    return min(math.exp(-n * h1), math.e * binom_cdf)
+
+
+def omission_grid_matrices(
+    documents: List[Dict[str, Any]],
+    tau_vals: np.ndarray,
+    gamma_vals: np.ndarray,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Per-document fractional omission loss and surfaced count on a (tau, gamma) grid.
+
+    Returns (loss, workload), each of shape (n_docs, len(tau_vals), len(gamma_vals)).
+    """
+    loss = np.zeros((len(documents), len(tau_vals), len(gamma_vals)))
+    workload = np.zeros_like(loss)
+    for i, doc in enumerate(documents):
+        imp = np.asarray(doc['importance_probs'])
+        non_cov = 1.0 - np.asarray(doc['coverage_probs'])
+        true_omissions = (np.asarray(doc['importance_labels']) == 1) & (np.asarray(doc['coverage_labels']) == 0)
+        surfaced = (imp[:, None, None] >= tau_vals[None, :, None]) & (non_cov[:, None, None] >= gamma_vals[None, None, :])
+        workload[i] = surfaced.sum(axis=0)
+        n_true = true_omissions.sum()
+        if n_true:
+            loss[i] = (true_omissions[:, None, None] & ~surfaced).sum(axis=0) / n_true
+    return loss, workload
+
+
+def ltt_fst_ordering(tau_vals: np.ndarray, gamma_vals: np.ndarray, ordering: str = "tau_plus_gamma") -> List[Tuple[int, int]]:
+    """Data-independent test order over grid indices, permissive -> restrictive.
+
+    - "tau_plus_gamma": tau+gamma ascending, ties by tau ascending then gamma ascending
+      (the ordering stated in the paper, Sec 3.4 / App B.1).
+    - "lex_tau": tau ascending, then gamma ascending.
+    - "diagonal": tau = gamma chain only.
+    """
+    idx = [(i, j) for i in range(len(tau_vals)) for j in range(len(gamma_vals))]
+    if ordering == "tau_plus_gamma":
+        # Round the sum so grid cells with equal tau+gamma tie exactly (float sums such as
+        # 0.05+0.25 vs 0.25+0.05 differ in the last bit); ties then fall to tau ascending.
+        idx.sort(key=lambda c: (round(float(tau_vals[c[0]] + gamma_vals[c[1]]), 9), tau_vals[c[0]], gamma_vals[c[1]]))
+    elif ordering == "lex_tau":
+        idx.sort(key=lambda c: (tau_vals[c[0]], gamma_vals[c[1]]))
+    elif ordering == "diagonal":
+        idx = [(i, i) for i in range(min(len(tau_vals), len(gamma_vals)))]
+    else:
+        raise ValueError(f"unknown ordering: {ordering}")
+    return idx
+
+
+def ltt_fst_select_from_grid(
+    loss: np.ndarray,
+    workload: np.ndarray,
+    order: List[Tuple[int, int]],
+    alpha: float,
+    delta: float = 0.05,
+    deploy: str = "min_workload",
+) -> Tuple[int, int, int, bool]:
+    """Fixed-sequence LTT over a precomputed grid.
+
+    Walks `order`, rejecting H_g: R(g) > alpha while the HB p-value is <= delta and
+    stopping at the first non-rejection. Every certified cell satisfies
+    Pr(R(g) <= alpha) >= 1 - delta simultaneously (FWER control), so any choice
+    among them keeps the guarantee.
+
+    deploy: "min_workload" (default) deploys the certified cell with the lowest mean
+    calibration workload (first in test order on ties); "last" deploys the final
+    rejected cell, as written in the submitted paper.
+
+    Returns (tau_idx, gamma_idx, n_certified, is_feasible). Falls back to (0, 0),
+    which surfaces every sentence (zero loss), if nothing is certified.
+    """
+    n = loss.shape[0]
+    risk = loss.mean(axis=0)
+    certified = []
+    for (i, j) in order:
+        if hb_pvalue(float(risk[i, j]), n, alpha) <= delta:
+            certified.append((i, j))
+        else:
+            break
+    if not certified:
+        return 0, 0, 0, False
+    if deploy == "last":
+        i, j = certified[-1]
+    elif deploy == "min_workload":
+        mean_wl = workload.mean(axis=0)
+        i, j = min(certified, key=lambda c: mean_wl[c])
+    else:
+        raise ValueError(f"unknown deploy rule: {deploy}")
+    return int(i), int(j), len(certified), True
+
+
+def select_omission_threshold_ltt_fst(
+    documents: List[Dict[str, Any]],
+    alpha: float,
+    delta: float = 0.05,
+    grid_resolution: float = 0.05,
+    ordering: str = "tau_plus_gamma",
+    deploy: str = "min_workload",
+) -> Dict[str, Any]:
+    """
+    LTT-FST omission calibration — the PRIMARY omission controller.
+
+    Learn-Then-Test (Angelopoulos et al., Thm 1) with fixed-sequence testing over a
+    data-independent ordering of the (tau, gamma) grid, Hoeffding-Bentkus p-values,
+    and FWER level delta. Guarantee: Pr( E[L_omit(tau*, gamma*; X)] <= alpha ) >= 1 - delta
+    over the calibration draw. No monotonicity along the ordering is required.
+    The deployed cell is the minimum-workload certified cell by default.
+    """
+    if not documents:
+        raise ValueError("LTT-FST needs at least one calibration document")
+    n = len(documents)
+    tau_vals = np.arange(0.0, 1.0 + grid_resolution, grid_resolution)
+    gamma_vals = np.arange(0.0, 1.0 + grid_resolution, grid_resolution)
+    loss, workload = omission_grid_matrices(documents, tau_vals, gamma_vals)
+    order = ltt_fst_ordering(tau_vals, gamma_vals, ordering)
+    i, j, n_certified, is_feasible = ltt_fst_select_from_grid(loss, workload, order, alpha, delta, deploy)
+
+    risk = float(loss[:, i, j].mean())
+    logger.debug(f"LTT-FST ({ordering}, deploy={deploy}) selected (tau*, gamma*) = "
+                f"({tau_vals[i]:.3f}, {gamma_vals[j]:.3f}); certified {n_certified}/{len(order)} cells")
+    return {
+        'tau': float(tau_vals[i]),
+        'gamma': float(gamma_vals[j]),
+        'threshold_type': f'omission_ltt_fst_{ordering}_{deploy}',
+        'loss_type': 'fractional',
+        'alpha': float(alpha),
+        'delta': float(delta),
+        'n_docs': int(n),
+        'empirical_risk': risk,
+        'hb_pvalue': hb_pvalue(risk, n, alpha),
+        'workload': float(workload[:, i, j].mean()),
+        'is_feasible': bool(is_feasible),
+        'n_certified': int(n_certified),
+        'fst_ordering': ordering,
+        'deploy': deploy,
+        'grid_size': int(len(order)),
+    }
+
+
 def select_omission_threshold_fst_fractional(
     documents: List[Dict[str, Any]],
     alpha: float,
@@ -603,20 +757,15 @@ def select_omission_threshold_fst_fractional(
     ordering: str = "tau_plus_gamma",
 ) -> Dict[str, Any]:
     """
-    LTT-FST omission calibration — the PRIMARY omission controller.
+    LEGACY CRC-bound scan (produced the submitted paper's omission numbers).
 
-    Rigorous variant of the 2D-Joint heuristic (select_omission_threshold_2d_
-    fractional, kept as a comparator). Walks a pre-specified, data-independent
-    ordering of grid cells and selects the first cell whose finite-sample CRC
-    bound holds at level alpha.
+    Kept only for comparison; use select_omission_threshold_ltt_fst instead.
 
-    Theory: by Learn-Then-Test (Angelopoulos et al., 2021, Thm 1) with the
-    fixed-sequence multiple-testing procedure over a data-independent ordering,
-    the output (tau*, gamma*) satisfies E[L(tau*,gamma*; X_{n+1})] <= alpha with
-    the same finite-sample (n+1) correction as scalar CRC. No Bonferroni
-    correction is required because the testing order is data-independent. The
-    omission loss is monotone non-increasing along the (tau+gamma)-descending
-    sequence, so early-stop at the first feasible cell is well-defined.
+    Walks the grid in (tau+gamma)-DESCENDING order, starting from (1, 1), which
+    surfaces nothing, and returns the first cell whose CRC bound
+    (n/(n+1)) R_hat + 1/(n+1) <= alpha. This is NOT Learn-Then-Test. It uses no
+    p-values and no delta, and the surfaced sets are not nested along this order,
+    so the scalar-CRC expectation guarantee does not carry over either.
 
     Args:
         documents: calibration documents (same format as the 2D-Joint variant).
@@ -1866,6 +2015,7 @@ def run_phase3(
     grid_resolution: float = 0.01,
     omission_2d_resolution: float = 0.05,
     split: str = 'calibration',
+    delta: float = 0.05,
 ):
     """
     Run Phase 3: Conformal risk control threshold selection.
@@ -1878,6 +2028,7 @@ def run_phase3(
         grid_resolution: Threshold grid resolution for 1D (default: 0.01)
         omission_2d_resolution: Grid resolution for 2D omission (default: 0.05)
         split: Which split to use ('calibration' or 'all'). Default: 'calibration'
+        delta: LTT-FST FWER level for the omission controller (default: 0.05)
     """
     logger.info("="*80)
     logger.info("Phase 3: Conformal Risk Control (Binary Instance Losses)")
@@ -1949,6 +2100,16 @@ def run_phase3(
         grid_resolution=omission_2d_resolution,
     )
 
+    # Controller B (primary, rigorous): LTT-FST over the same (tau, gamma) grid.
+    logger.info("\n" + "-"*40)
+    logger.info(f"Computing LTT-FST omission thresholds (delta={delta})...")
+    omission_ltt_fst_result = select_omission_threshold_ltt_fst(
+        documents,
+        alpha=alpha_omit,
+        delta=delta,
+        grid_resolution=omission_2d_resolution,
+    )
+
     # Also compute binary loss thresholds (secondary metric)
     logger.info("\n" + "-"*40)
     logger.info("Computing 2D binary loss thresholds (secondary)...")
@@ -2000,6 +2161,7 @@ def run_phase3(
         'factuality_uncalibrated_baseline': factuality_uncalibrated_result,
         'factuality_devset_baseline': factuality_devset_result,
         'omission': omission_result,  # Fractional loss (default)
+        'omission_ltt_fst': omission_ltt_fst_result,  # LTT-FST: Pr(R <= alpha) >= 1 - delta
         'omission_binary': omission_binary_result,  # Binary loss (secondary)
         'omission_1d_baseline': omission_1d_result,
         'omission_product_baseline': omission_product_result,
@@ -2010,6 +2172,7 @@ def run_phase3(
             'alpha_omit': alpha_omit,
             'grid_resolution': grid_resolution,
             'omission_2d_resolution': omission_2d_resolution,
+            'delta': delta,
             'n_calibration_docs': len(documents),
             'min_feasible_alpha': min_alpha,
             'omission_loss_type': 'fractional',
@@ -2054,6 +2217,11 @@ def run_phase3(
     logger.info(f"  Binary risk: {omission_result['binary_empirical_risk']:.4f} (adjusted: {omission_result['binary_adjusted_risk']:.4f})")
     logger.info(f"  Feasible: {omission_result['is_feasible']}")
     logger.info(f"  Feasible set size: {omission_result['feasible_set_size']}")
+    logger.info(f"LTT-FST (tau*, gamma*) = ({omission_ltt_fst_result['tau']:.3f}, "
+                f"{omission_ltt_fst_result['gamma']:.3f}); certified "
+                f"{omission_ltt_fst_result['n_certified']}/{omission_ltt_fst_result['grid_size']}, "
+                f"p_HB={omission_ltt_fst_result['hb_pvalue']:.4f}, "
+                f"workload={omission_ltt_fst_result['workload']:.1f}")
     logger.info(f"Binary 2D thresholds (τ*, γ*) = ({omission_binary_result['tau']:.3f}, {omission_binary_result['gamma']:.3f}) [secondary]")
     logger.info(f"  Binary adjusted risk: {omission_binary_result['adjusted_risk']:.4f}")
     logger.info(f"  Binary workload: {omission_binary_result['workload']:.1f}")
@@ -2118,6 +2286,12 @@ def main():
         help='2D grid resolution for omission (default: 0.05)'
     )
     parser.add_argument(
+        '--delta',
+        type=float,
+        default=0.05,
+        help='LTT-FST FWER level delta for the omission controller (default: 0.05)'
+    )
+    parser.add_argument(
         '--dataset',
         choices=["aci", "meq", "bhc", "cxr", "pubmed", "privds"],  # All datasets
         required=True,
@@ -2146,6 +2320,7 @@ def main():
         grid_resolution=args.grid_resolution,
         omission_2d_resolution=args.omission_2d_resolution,
         split=args.split,
+        delta=args.delta,
     )
 
 

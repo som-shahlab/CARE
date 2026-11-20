@@ -30,6 +30,8 @@ scorers = [
     "scikit-learn",
     "scipy",
 ]
+# Test suite (pytest tests/)
+dev = ["pytest>=7"]
 
 [tool.setuptools.packages.find]
 include = ["care*"]

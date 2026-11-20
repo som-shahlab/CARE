@@ -27,13 +27,21 @@ ALPHA = 0.15
 BOOTSTRAP_ITERS = 10000
 BOOTSTRAP_SEED = 42
 
-# Rigorously-guaranteed methods (finite-sample CRC, compete for bold).
+# Methods with the same high-probability (alpha, delta) guarantee as LTT-FST
+# (Hoeffding-Bentkus LTT, delta=0.05). These compete for bold.
 # LTT-FST is the CARE omission controller and the headline method.
 GUARANTEED = [
-    ("fst",          "LTT-FST"),
-    ("1d_imp",       "1D-Imp"),
-    ("product",      "Product"),
-    ("union_bound",  "Union Bnd"),
+    ("fst",             "LTT-FST"),
+    ("1d_imp_hb",       "1D-Imp (HB)"),
+    ("product_hb",      "Product (HB)"),
+    ("union_bound_hb",  "Union Bnd (HB)"),
+]
+
+# Methods with the weaker expected-risk (scalar CRC) guarantee; shown, not bolded.
+GUARANTEED_CRC = [
+    ("1d_imp",       "1D-Imp (CRC)"),
+    ("product",      "Product (CRC)"),
+    ("union_bound",  "Union Bnd (CRC)"),
 ]
 
 # Methods without finite-sample guarantees (shown for comparison, never bolded)
@@ -43,6 +51,7 @@ UNGUARANTEED = [
 ]
 
 METHOD_MAP = ([(k, n) for k, n in GUARANTEED]
+              + [(k, n) for k, n in GUARANTEED_CRC]
               + [(k, n) for k, n, _ in UNGUARANTEED])
 
 
@@ -120,11 +129,13 @@ def generate_latex(all_data):
     lines.append(r"\caption{Omission controller comparison at $\alpha=0.15$ (fractional loss), "
                  r"averaged over 100 random 70/30 cal/test resplits. "
                  r"V\% is reported as mean with 95\% bootstrap CI over resplits. "
-                 r"\textbf{Above the dashed line}: methods with finite-sample CRC guarantees; "
-                 r"\textsc{LTT-FST} is the \textsc{Care} omission controller. "
-                 r"Bold marks fewest flagged sentences among those whose CI lower bound "
-                 r"does not exceed $\alpha$. "
-                 r"\textbf{Below the dashed line}: empirical thresholding baselines with no "
+                 r"\textbf{First block}: methods with the same high-probability guarantee "
+                 r"$\Pr(R\le\alpha)\ge 1-\delta$, $\delta=0.05$ (Learn-Then-Test with "
+                 r"Hoeffding--Bentkus $p$-values); \textsc{LTT-FST} is the \textsc{Care} omission "
+                 r"controller. Bold marks fewest flagged sentences in this block. "
+                 r"\textbf{Second block}: the same reduced-dimensional baselines calibrated with "
+                 r"scalar CRC, which gives the weaker expected-risk guarantee $\mathbb{E}[R]\le\alpha$. "
+                 r"\textbf{Third block}: empirical thresholding baselines with no "
                  r"finite-sample guarantee: Max-F1 (oracle F1-optimal $(\tau,\gamma)$ on cal "
                  r"using labels, ignores $\alpha$) and Fixed-0.5 (label-free: "
                  r"$\tau{=}\gamma{=}0.5$, no calibration). Red V\% marks cells whose CI "
@@ -176,6 +187,19 @@ def generate_latex(all_data):
 
             ds_cell = ds_label if row_idx == 0 else ""
             lines.append(f"{ds_cell} & {method_cell} & {v_cell} & {wl_cell} & {rec_str} \\\\")
+            row_idx += 1
+
+        lines.append(r"\cdashline{2-5}")
+
+        # Expected-risk (CRC) guaranteed methods: shown, never bolded
+        for _, name in GUARANTEED_CRC:
+            if name not in methods:
+                continue
+            m = methods[name]
+            rc = _row_color_open(row_idx)
+            if rc:
+                lines.append(rc)
+            lines.append(f" & {name} & {_fmt_viol(m)} & {m['wl']:.1f} ({m['wl_pct']:.1f}\\%) & {m['recall']:.1f} \\\\")
             row_idx += 1
 
         lines.append(r"\cdashline{2-5}")

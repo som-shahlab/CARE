@@ -1,66 +1,91 @@
 \begin{table}[t!]
 \centering
 \footnotesize
-\caption{Omission controller comparison at $\alpha=0.15$ (fractional loss), averaged over 100 random 70/30 cal/test resplits. V\% is reported as mean with 95\% bootstrap CI over resplits. \textbf{Above the dashed line}: methods with finite-sample CRC guarantees; \textsc{LTT-FST} is the \textsc{Care} omission controller. Bold marks fewest flagged sentences among those whose CI lower bound does not exceed $\alpha$. \textbf{Below the dashed line}: empirical thresholding baselines with no finite-sample guarantee: Max-F1 (oracle F1-optimal $(\tau,\gamma)$ on cal using labels, ignores $\alpha$) and Fixed-0.5 (label-free: $\tau{=}\gamma{=}0.5$, no calibration). Red V\% marks cells whose CI lies entirely above $\alpha$ (empirically significant violation).}
+\caption{Omission controller comparison at $\alpha=0.15$ (fractional loss), averaged over 100 random 70/30 cal/test resplits. V\% is reported as mean with 95\% bootstrap CI over resplits. \textbf{First block}: methods with the same high-probability guarantee $\Pr(R\le\alpha)\ge 1-\delta$, $\delta=0.05$ (Learn-Then-Test with Hoeffding--Bentkus $p$-values); \textsc{LTT-FST} is the \textsc{Care} omission controller. Bold marks fewest flagged sentences in this block. \textbf{Second block}: the same reduced-dimensional baselines calibrated with scalar CRC, which gives the weaker expected-risk guarantee $\mathbb{E}[R]\le\alpha$. \textbf{Third block}: empirical thresholding baselines with no finite-sample guarantee: Max-F1 (oracle F1-optimal $(\tau,\gamma)$ on cal using labels, ignores $\alpha$) and Fixed-0.5 (label-free: $\tau{=}\gamma{=}0.5$, no calibration). Red V\% marks cells whose CI lies entirely above $\alpha$ (empirically significant violation).}
 \label{tab:baselines}
 \resizebox{\columnwidth}{!}{
 \begin{tabular}{ll rrr}
 \toprule
 Dataset & Method & V\% [95\% CI] & Flagged & Rec\% \\
 \midrule
-ACI-Bench & \textbf{LTT-FST} & \textbf{14.0 [12.9, 15.2]} & \textbf{9.8} (18.9\%) & 75.3 \\
+ACI-Bench & \textbf{LTT-FST} & \textbf{5.6 [4.9, 6.3]} & \textbf{15.3} (29.4\%) & 89.0 \\
 \rowcolor{gray!6}
- & 1D-Imp & 11.9 [10.6, 13.2] & 25.2 (48.6\%) & 79.4 \\
- & Product & 14.1 [12.9, 15.4] & 11.0 (21.2\%) & 76.1 \\
+ & 1D-Imp (HB) & 6.3 [5.3, 7.2] & 29.8 (57.3\%) & 89.4 \\
+ & Product (HB) & 6.0 [5.1, 6.9] & 15.9 (30.5\%) & 89.5 \\
 \rowcolor{gray!6}
- & Union Bnd & 11.3 [10.1, 12.5] & 11.5 (22.1\%) & 80.7 \\
+ & Union Bnd (HB) & 0.9 [0.6, 1.3] & 33.6 (64.7\%) & 97.1 \\
 \cdashline{2-5}
- & \textcolor{gray}{Max-F1\textsuperscript{*}} & \textcolor{redflag}{28.1 [27.0, 29.3]} & \textcolor{gray}{4.1 (8.0\%)} & \textcolor{gray}{48.6} \\
+ & 1D-Imp (CRC) & 11.9 [10.6, 13.2] & 25.2 (48.6\%) & 79.4 \\
 \rowcolor{gray!6}
+ & Product (CRC) & 14.1 [12.9, 15.4] & 11.0 (21.2\%) & 76.1 \\
+ & Union Bnd (CRC) & 11.3 [10.1, 12.5] & 11.5 (22.1\%) & 80.7 \\
+\cdashline{2-5}
+\rowcolor{gray!6}
+ & \textcolor{gray}{Max-F1\textsuperscript{*}} & \textcolor{redflag}{28.1 [27.0, 29.3]} & \textcolor{gray}{4.1 (8.0\%)} & \textcolor{gray}{48.6} \\
  & \textcolor{gray}{Fixed-0.5\textsuperscript{*}} & \textcolor{redflag}{16.1 [15.2, 16.9]} & \textcolor{gray}{8.7 (16.7\%)} & \textcolor{gray}{71.5} \\
 \midrule
-MIMIC-BHC & \textbf{LTT-FST} & \textbf{13.7 [13.5, 13.8]} & \textbf{66.3} (57.5\%) & 86.5 \\
+MIMIC-BHC & \textbf{LTT-FST} & \textbf{10.4 [10.0, 10.7]} & \textbf{71.4} (62.0\%) & 89.5 \\
 \rowcolor{gray!6}
- & 1D-Imp & 11.9 [11.2, 12.5] & 84.7 (73.5\%) & 87.3 \\
- & Product & 10.1 [9.9, 10.3] & 72.3 (62.8\%) & 90.5 \\
+ & 1D-Imp (HB) & 10.0 [9.8, 10.1] & 87.7 (76.1\%) & 89.6 \\
+ & Product (HB) & 9.8 [9.5, 10.1] & 72.9 (63.3\%) & 90.8 \\
 \rowcolor{gray!6}
- & Union Bnd & 10.1 [9.9, 10.3] & 71.8 (62.4\%) & 90.6 \\
+ & Union Bnd (HB) & 6.8 [6.5, 7.1] & 78.0 (67.7\%) & 93.9 \\
 \cdashline{2-5}
- & \textcolor{gray}{Max-F1\textsuperscript{*}} & \textcolor{redflag}{40.3 [40.1, 40.6]} & \textcolor{gray}{30.0 (26.0\%)} & \textcolor{gray}{58.9} \\
+ & 1D-Imp (CRC) & 11.9 [11.2, 12.5] & 84.7 (73.5\%) & 87.3 \\
 \rowcolor{gray!6}
+ & Product (CRC) & 10.1 [9.9, 10.3] & 72.3 (62.8\%) & 90.5 \\
+ & Union Bnd (CRC) & 10.1 [9.9, 10.3] & 71.8 (62.4\%) & 90.6 \\
+\cdashline{2-5}
+\rowcolor{gray!6}
+ & \textcolor{gray}{Max-F1\textsuperscript{*}} & \textcolor{redflag}{40.3 [40.1, 40.6]} & \textcolor{gray}{30.0 (26.0\%)} & \textcolor{gray}{58.9} \\
  & \textcolor{gray}{Fixed-0.5\textsuperscript{*}} & \textcolor{redflag}{18.6 [18.4, 18.9]} & \textcolor{gray}{58.6 (50.9\%)} & \textcolor{gray}{80.7} \\
 \midrule
-MIMIC-CXR & \textbf{LTT-FST} & \textbf{9.3 [8.9, 9.7]} & \textbf{0.9} (11.4\%) & 58.8 \\
+MIMIC-CXR & LTT-FST & 2.0 [1.8, 2.2] & 2.1 (26.4\%) & 90.4 \\
 \rowcolor{gray!6}
- & 1D-Imp & 7.6 [7.2, 7.9] & 4.9 (61.8\%) & 67.1 \\
- & Product & 5.6 [5.2, 6.2] & 1.5 (18.9\%) & 74.5 \\
+ & 1D-Imp (HB) & 7.6 [7.2, 7.9] & 4.9 (61.8\%) & 67.1 \\
+ & Product (HB) & 5.4 [5.1, 5.8] & 1.5 (19.1\%) & 75.1 \\
 \rowcolor{gray!6}
- & Union Bnd & 8.1 [7.6, 8.7] & 1.0 (12.6\%) & 63.7 \\
+ & \textbf{Union Bnd (HB)} & \textbf{5.5 [5.1, 5.9]} & \textbf{1.2} (15.4\%) & 74.9 \\
 \cdashline{2-5}
- & \textcolor{gray}{Max-F1\textsuperscript{*}} & \textcolor{gray}{7.2 [6.7, 7.7]} & \textcolor{gray}{1.1 (13.8\%)} & \textcolor{gray}{67.6} \\
+ & 1D-Imp (CRC) & 7.6 [7.2, 7.9] & 4.9 (61.8\%) & 67.1 \\
 \rowcolor{gray!6}
+ & Product (CRC) & 5.6 [5.2, 6.2] & 1.5 (18.9\%) & 74.5 \\
+ & Union Bnd (CRC) & 8.1 [7.6, 8.7] & 1.0 (12.6\%) & 63.7 \\
+\cdashline{2-5}
+\rowcolor{gray!6}
+ & \textcolor{gray}{Max-F1\textsuperscript{*}} & \textcolor{gray}{7.2 [6.7, 7.7]} & \textcolor{gray}{1.1 (13.8\%)} & \textcolor{gray}{67.6} \\
  & \textcolor{gray}{Fixed-0.5\textsuperscript{*}} & \textcolor{gray}{2.3 [2.1, 2.4]} & \textcolor{gray}{1.8 (23.0\%)} & \textcolor{gray}{89.6} \\
 \midrule
-Priv-DS & \textbf{LTT-FST} & \textbf{11.7 [11.6, 11.8]} & \textbf{219.0} (61.0\%) & 88.6 \\
+Priv-DS & \textbf{LTT-FST} & \textbf{9.1 [9.0, 9.2]} & \textbf{235.8} (65.7\%) & 90.9 \\
 \rowcolor{gray!6}
- & 1D-Imp & 8.8 [8.7, 8.9] & 261.6 (72.9\%) & 91.2 \\
- & Product & 13.0 [12.8, 13.2] & 228.4 (63.6\%) & 87.4 \\
+ & 1D-Imp (HB) & 8.8 [8.7, 8.9] & 261.6 (72.9\%) & 91.2 \\
+ & Product (HB) & 7.4 [7.4, 7.5] & 250.0 (69.7\%) & 92.8 \\
 \rowcolor{gray!6}
- & Union Bnd & 9.2 [9.1, 9.3] & 234.6 (65.4\%) & 91.1 \\
+ & Union Bnd (HB) & 6.8 [6.6, 6.9] & 255.8 (71.3\%) & 93.5 \\
 \cdashline{2-5}
- & \textcolor{gray}{Max-F1\textsuperscript{*}} & \textcolor{redflag}{27.4 [27.3, 27.6]} & \textcolor{gray}{151.1 (42.1\%)} & \textcolor{gray}{72.3} \\
+ & 1D-Imp (CRC) & 8.8 [8.7, 8.9] & 261.6 (72.9\%) & 91.2 \\
 \rowcolor{gray!6}
+ & Product (CRC) & 13.0 [12.8, 13.2] & 228.4 (63.6\%) & 87.4 \\
+ & Union Bnd (CRC) & 9.2 [9.1, 9.3] & 234.6 (65.4\%) & 91.1 \\
+\cdashline{2-5}
+\rowcolor{gray!6}
+ & \textcolor{gray}{Max-F1\textsuperscript{*}} & \textcolor{redflag}{27.4 [27.3, 27.6]} & \textcolor{gray}{151.1 (42.1\%)} & \textcolor{gray}{72.3} \\
  & \textcolor{gray}{Fixed-0.5\textsuperscript{*}} & \textcolor{gray}{11.7 [11.6, 11.8]} & \textcolor{gray}{219.0 (61.0\%)} & \textcolor{gray}{88.6} \\
 \midrule
-SumPubMed & \textbf{LTT-FST} & \textbf{12.5 [12.2, 12.9]} & \textbf{112.1} (66.2\%) & 87.2 \\
+SumPubMed & LTT-FST & 7.4 [7.3, 7.6] & 122.4 (72.2\%) & 92.1 \\
 \rowcolor{gray!6}
- & 1D-Imp & 6.9 [6.8, 7.0] & 137.8 (81.3\%) & 92.5 \\
- & Product & 10.1 [10.0, 10.3] & 121.0 (71.4\%) & 89.8 \\
+ & 1D-Imp (HB) & 6.9 [6.8, 7.0] & 137.8 (81.3\%) & 92.5 \\
+ & \textbf{Product (HB)} & \textbf{10.1 [10.0, 10.3]} & \textbf{121.0} (71.4\%) & 89.8 \\
 \rowcolor{gray!6}
- & Union Bnd & 11.9 [11.7, 12.1] & 113.2 (66.8\%) & 87.8 \\
+ & Union Bnd (HB) & 7.1 [7.0, 7.3] & 127.2 (75.1\%) & 92.7 \\
 \cdashline{2-5}
- & \textcolor{gray}{Max-F1\textsuperscript{*}} & \textcolor{redflag}{47.8 [47.5, 48.1]} & \textcolor{gray}{38.4 (22.7\%)} & \textcolor{gray}{52.4} \\
+ & 1D-Imp (CRC) & 6.9 [6.8, 7.0] & 137.8 (81.3\%) & 92.5 \\
 \rowcolor{gray!6}
+ & Product (CRC) & 10.1 [10.0, 10.3] & 121.0 (71.4\%) & 89.8 \\
+ & Union Bnd (CRC) & 11.9 [11.7, 12.1] & 113.2 (66.8\%) & 87.8 \\
+\cdashline{2-5}
+\rowcolor{gray!6}
+ & \textcolor{gray}{Max-F1\textsuperscript{*}} & \textcolor{redflag}{47.8 [47.5, 48.1]} & \textcolor{gray}{38.4 (22.7\%)} & \textcolor{gray}{52.4} \\
  & \textcolor{gray}{Fixed-0.5\textsuperscript{*}} & \textcolor{redflag}{15.2 [15.1, 15.4]} & \textcolor{gray}{109.0 (64.3\%)} & \textcolor{gray}{84.5} \\
 \bottomrule
 \multicolumn{5}{l}{\textsuperscript{*}No finite-sample guarantee; empirical numbers shown for comparison.} \\

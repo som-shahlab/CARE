@@ -14,6 +14,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from pathlib import Path
 
+from care.calibration import select_omission_threshold_ltt_fst
 from care.config import CANONICAL_DATA_ROOT as DATA_ROOT, PAPER_OUTPUT_DIR as OUTPUT_DIR
 
 ALPHA = 0.15
@@ -112,16 +113,11 @@ def find_methods(cal_docs):
     feasible_pairs.sort()  # min surfaced, then max tau, max gamma
     _, _, _, best_2d_tau, best_2d_gamma, best_2d_wl = feasible_pairs[0]
 
-    # LTT-FST: walk the pre-specified tau+gamma-descending ordering and stop
-    # at the first feasible cell (Angelopoulos et al. 2021, Fixed-Sequence).
-    cells = [(float(t), float(g)) for t in tau_vals for g in gamma_vals]
-    cells.sort(key=lambda c: (-(c[0] + c[1]), -c[0], -c[1]))
-    fst_tau, fst_gamma, fst_wl = 0.0, 0.0, 0.0
-    for tau, gamma in cells:
-        risk, wl, _ = compute_risk_and_workload(cal_docs, tau, gamma)
-        if risk <= ALPHA:
-            fst_tau, fst_gamma, fst_wl = tau, gamma, wl
-            break
+    # LTT-FST (care.calibration): HB p-values, tau+gamma ascending, delta=0.05,
+    # min-workload certified cell.
+    r = select_omission_threshold_ltt_fst(cal_docs, ALPHA, grid_resolution=GRID)
+    fst_tau, fst_gamma = r["tau"], r["gamma"]
+    _, fst_wl, _ = compute_risk_and_workload(cal_docs, fst_tau, fst_gamma)
 
     return {
         "1d_imp": (best_1d_tau, 0.0, wl_1d),

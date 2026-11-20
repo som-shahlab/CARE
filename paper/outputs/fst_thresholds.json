@@ -1,57 +1,72 @@
 {
   "ACI_Bench": {
     "lambda": 0.7000000000000001,
-    "tau": 0.5,
-    "gamma": 0.30000000000000004,
+    "tau": 0.15000000000000002,
+    "gamma": 0.05,
     "n_cal": 86,
-    "adjusted_risk": 0.14795657726692207,
-    "workload": 10.616279069767442,
+    "empirical_risk": 0.059593023255813955,
+    "hb_pvalue": 0.031946850049303754,
+    "n_certified": 16,
+    "workload": 16.38372093023256,
     "is_feasible": true,
     "alpha": 0.15,
-    "method": "omission_fst_tau_plus_gamma"
+    "delta": 0.05,
+    "method": "omission_ltt_fst_tau_plus_gamma_min_workload"
   },
   "MIMIC_IV_BHC": {
     "lambda": 0.6,
-    "tau": 0.4,
-    "gamma": 0.5,
+    "tau": 0.30000000000000004,
+    "gamma": 0.05,
     "n_cal": 350,
-    "adjusted_risk": 0.14239991314427802,
-    "workload": 65.58857142857143,
+    "empirical_risk": 0.10696551876003038,
+    "hb_pvalue": 0.041354729895153965,
+    "n_certified": 42,
+    "workload": 70.53714285714285,
     "is_feasible": true,
     "alpha": 0.15,
-    "method": "omission_fst_tau_plus_gamma"
+    "delta": 0.05,
+    "method": "omission_ltt_fst_tau_plus_gamma_min_workload"
   },
   "MIMIC_III_CXR": {
     "lambda": 0.5,
-    "tau": 1.0,
-    "gamma": 0.5,
+    "tau": 0.05,
+    "gamma": 0.45,
     "n_cal": 350,
-    "adjusted_risk": 0.09449192782526114,
-    "workload": 0.92,
+    "empirical_risk": 0.021904761904761903,
+    "hb_pvalue": 2.996829198913953e-15,
+    "n_certified": 66,
+    "workload": 2.0628571428571427,
     "is_feasible": true,
     "alpha": 0.15,
-    "method": "omission_fst_tau_plus_gamma"
+    "delta": 0.05,
+    "method": "omission_ltt_fst_tau_plus_gamma_min_workload"
   },
   "PRIV_DS": {
     "lambda": 0.8,
-    "tau": 0.5,
-    "gamma": 0.5,
+    "tau": 0.45,
+    "gamma": 0.05,
     "n_cal": 350,
-    "adjusted_risk": 0.12194739897510254,
-    "workload": 217.24285714285713,
+    "empirical_risk": 0.09474831207610196,
+    "hb_pvalue": 0.006397816398690638,
+    "n_certified": 66,
+    "workload": 233.51142857142858,
     "is_feasible": true,
     "alpha": 0.15,
-    "method": "omission_fst_tau_plus_gamma"
+    "delta": 0.05,
+    "method": "omission_ltt_fst_tau_plus_gamma_min_workload"
   },
   "SumPubMed": {
     "lambda": 0.5,
-    "tau": 0.5,
-    "gamma": 0.4,
+    "tau": 0.30000000000000004,
+    "gamma": 0.1,
     "n_cal": 350,
-    "adjusted_risk": 0.12509849884218838,
-    "workload": 114.27714285714286,
+    "empirical_risk": 0.07606369699991061,
+    "hb_pvalue": 7.283478449756607e-05,
+    "n_certified": 56,
+    "workload": 125.13714285714286,
     "is_feasible": true,
     "alpha": 0.15,
-    "method": "omission_fst_tau_plus_gamma"
+    "delta": 0.05,
+    "method": "omission_ltt_fst_tau_plus_gamma_min_workload"
   }
 }

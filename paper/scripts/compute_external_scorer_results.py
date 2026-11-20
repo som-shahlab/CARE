@@ -48,7 +48,8 @@ ALIGNSCORE_MODE = os.environ.get("ALIGNSCORE_MODE", "nli_sp")
 
 RESULTS_PATH = OUTPUT_DIR / "external_scorer_results.json"
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available()
+                      else "mps" if torch.backends.mps.is_available() else "cpu")
 
 
 # ---------------------------------------------------------------------------
@@ -89,7 +90,7 @@ def cosine_sim_matrix(emb1, emb2):
     return (e1 @ e2.T).numpy()
 
 
-def score_nli_factuality(doc, nli_tok, nli_model, batch_size=32):
+def score_nli_factuality(doc, nli_tok, nli_model, batch_size=8):
     """NLI entailment score per summary sentence (max over top-K source sents)."""
     src_sents = doc["source_sentences"]
     gen_sents = doc["generated_sentences"]
@@ -168,7 +169,7 @@ def score_embedding_factuality(doc, embed_tok, embed_model):
     return factuality
 
 
-def score_nli_coverage(doc, nli_tok, nli_model, batch_size=32):
+def score_nli_coverage(doc, nli_tok, nli_model, batch_size=8):
     """NLI reverse-direction: does the summary entail each source sentence?
 
     For each source sentence, compute entailment score with premise=full_summary,
@@ -208,7 +209,13 @@ def load_alignscore():
             "ALIGNSCORE_CKPT env var not set. Download AlignScore-base.ckpt from "
             "https://github.com/yuh-zha/AlignScore and set ALIGNSCORE_CKPT to its path."
         )
-    from alignscore import AlignScore
+    try:
+        from alignscore import AlignScore
+    except ImportError:
+        # Local nli_sp reimplementation, validated against the official package to <1e-5
+        # (paper/scripts/validate_alignscore_local.py).
+        from alignscore_local import AlignScore
+        print("alignscore package not found; using paper/scripts/alignscore_local.py")
     print(f"Loading AlignScore: {ALIGNSCORE_MODEL} ({ALIGNSCORE_MODE})")
     return AlignScore(
         model=ALIGNSCORE_MODEL,
@@ -449,19 +456,46 @@ def load_docs(dataset):
     return docs
 
 
+def _score_cache_path(ds_key, scorer_name):
+    """Per-sentence external scores (numbers only, keyed by doc_id), outside the repo."""
+    return DATA_ROOT / ds_key / "external_scores" / f"{scorer_name}.json"
+
+
 def apply_external_scores(docs, scorer_name, nli_tok, nli_model,
-                          embed_tok, embed_model, align_scorer):
-    """Replace LLM-judge factuality + coverage probs. Importance held fixed."""
-    scored = []
+                          embed_tok, embed_model, align_scorer, ds_key=None):
+    """Replace LLM-judge factuality + coverage probs. Importance held fixed.
+
+    If ds_key is given, scores are cached to _score_cache_path(ds_key, scorer_name)
+    so the CRC and LTT-FST scripts reuse the same model outputs.
+    """
+    cache, cache_path = {}, None
+    if ds_key is not None:
+        cache_path = _score_cache_path(ds_key, scorer_name)
+        if cache_path.exists():
+            cache = json.load(open(cache_path))
+    scored, n_new = [], 0
     for doc in tqdm(docs, desc=f"Scoring ({scorer_name})"):
         d = dict(doc)  # shallow copy; importance_probs inherited from LLM judge
+        hit = cache.get(str(d["doc_id"]))
+        if hit is not None and len(hit["factuality_probs"]) == len(d["generated_sentences"]) \
+                and len(hit["coverage_probs"]) == len(d["source_sentences"]):
+            d["factuality_probs"], d["coverage_probs"] = hit["factuality_probs"], hit["coverage_probs"]
+            scored.append(d)
+            continue
 
         if scorer_name == "nli_embed":
             d["factuality_probs"] = score_nli_factuality(d, nli_tok, nli_model)
             d["coverage_probs"] = score_nli_coverage(d, nli_tok, nli_model)
         elif scorer_name == "embed_only":
-            d["factuality_probs"] = score_embedding_factuality(d, embed_tok, embed_model)
-            d["coverage_probs"] = score_embedding_coverage(d, embed_tok, embed_model)
+            # Same outputs as score_embedding_{factuality,coverage}, encoding each sentence once.
+            if d["source_sentences"] and d["generated_sentences"]:
+                src_emb = encode_sentences(d["source_sentences"], embed_tok, embed_model)
+                gen_emb = encode_sentences(d["generated_sentences"], embed_tok, embed_model)
+                d["factuality_probs"] = cosine_sim_matrix(gen_emb, src_emb).max(axis=1).tolist()
+                d["coverage_probs"] = cosine_sim_matrix(src_emb, gen_emb).max(axis=1).tolist()
+            else:
+                d["factuality_probs"] = [0.5] * len(d["generated_sentences"])
+                d["coverage_probs"] = [0.5] * len(d["source_sentences"])
         elif scorer_name == "alignscore":
             d["factuality_probs"] = score_alignscore_factuality(d, align_scorer)
             d["coverage_probs"] = score_alignscore_coverage(d, align_scorer)
@@ -469,6 +503,16 @@ def apply_external_scores(docs, scorer_name, nli_tok, nli_model,
             raise ValueError(f"Unknown scorer: {scorer_name}")
 
         scored.append(d)
+        if cache_path is not None:
+            cache[str(d["doc_id"])] = {"factuality_probs": [float(x) for x in d["factuality_probs"]],
+                                       "coverage_probs": [float(x) for x in d["coverage_probs"]]}
+            n_new += 1
+            if n_new % 25 == 0:  # checkpoint so long runs can resume
+                cache_path.parent.mkdir(parents=True, exist_ok=True)
+                json.dump(cache, open(cache_path, "w"))
+    if cache_path is not None and n_new:
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        json.dump(cache, open(cache_path, "w"))
     return scored
 
 
@@ -567,7 +611,7 @@ def main():
             print(f"\n--- Scorer: {scorer_name} ---")
             scored_docs = apply_external_scores(
                 docs, scorer_name, nli_tok, nli_model,
-                embed_tok, embed_model, align_scorer,
+                embed_tok, embed_model, align_scorer, ds_key=ds_key,
             )
 
             print("Running resplits...")

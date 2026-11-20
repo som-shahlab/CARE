@@ -2,7 +2,7 @@
 """FST prompt-ablation validity check (100 resplits).
 
 Mirrors the omission portion of compute_prompt_ablation_cis.py but selects
-(τ, γ) via LTT-FST (τ+γ descending) instead of 2D Joint argmin-workload.
+(τ, γ) via LTT-FST (care.calibration: HB, τ+γ ascending, min-WL) instead of 2D Joint argmin-workload.
 
 Runs both generic (phase_2) and domain-specific (phase_2_modified_fact_imp)
 prompts across all 5 datasets and confirms FST holds α-validity.
@@ -15,6 +15,7 @@ from collections import OrderedDict
 from pathlib import Path
 from tqdm import tqdm
 
+from care.calibration import select_omission_threshold_ltt_fst
 from care.config import (
     CANONICAL_DATA_ROOT as DATA_ROOT,
     DATASETS,
@@ -50,16 +51,9 @@ def compute_omission(doc, tau, gamma):
 
 
 def fst_calibrate(cal_docs, alpha=ALPHA, grid=GRID):
-    n = len(cal_docs)
-    vals = np.arange(0.0, 1.0 + grid, grid)
-    cells = [(float(t), float(g)) for t in vals for g in vals]
-    cells.sort(key=lambda c: (-(c[0] + c[1]), -c[0], -c[1]))
-    for tau, gamma in cells:
-        losses = [compute_omission(d, tau, gamma)[0] for d in cal_docs]
-        adj = (n / (n + 1)) * np.mean(losses) + 1.0 / (n + 1)
-        if adj <= alpha:
-            return float(tau), float(gamma), True
-    return 0.0, 0.0, False
+    """LTT-FST (care.calibration). Returns (tau, gamma, is_feasible)."""
+    r = select_omission_threshold_ltt_fst(cal_docs, alpha, grid_resolution=grid)
+    return r["tau"], r["gamma"], r["is_feasible"]
 
 
 def evaluate(test_docs, tau, gamma):

@@ -22,6 +22,7 @@ from pathlib import Path
 import numpy as np
 from tqdm import tqdm
 
+from care.calibration import select_omission_threshold_ltt_fst
 from care.config import (
     CANONICAL_DATA_ROOT as DATA_ROOT,
     DATASETS,
@@ -107,23 +108,9 @@ def calibrate_omission_2d(cal_docs, alpha=ALPHA_OMIT, grid=GRID_OMIT):
 
 
 def calibrate_omission_fst(cal_docs, alpha=ALPHA_OMIT, grid=GRID_OMIT):
-    """LTT-FST omission calibration (tau+gamma descending ordering).
-
-    Walks a pre-specified, data-independent ordering of grid cells and stops
-    at the first cell whose finite-sample CRC bound holds (Angelopoulos et
-    al. 2021, Fixed-Sequence Testing). This is the CARE omission controller.
-    """
-    n = len(cal_docs)
-    tau_vals = np.arange(0.0, 1.0 + grid, grid)
-    gamma_vals = np.arange(0.0, 1.0 + grid, grid)
-    cells = [(float(t), float(g)) for t in tau_vals for g in gamma_vals]
-    cells.sort(key=lambda c: (-(c[0] + c[1]), -c[0], -c[1]))
-    for tau, gamma in cells:
-        losses = [omit_frac_loss_doc(d, tau, gamma) for d in cal_docs]
-        adj_risk = (n / (n + 1)) * np.mean(losses) + 1 / (n + 1)
-        if adj_risk <= alpha:
-            return tau, gamma
-    return 0.0, 0.0
+    """LTT-FST omission calibration (care.calibration; the CARE controller)."""
+    r = select_omission_threshold_ltt_fst(cal_docs, alpha, grid_resolution=grid)
+    return r["tau"], r["gamma"]
 
 
 # ---------------------------------------------------------------------------

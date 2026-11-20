@@ -5,158 +5,158 @@
   "cross_dataset": {
     "ACI_Bench": {
       "ACI_Bench": {
-        "violation": 0.1336906906906907
+        "violation": 0.05102627627627628
       },
       "MIMIC_IV_BHC": {
-        "violation": 0.16965986990974727
+        "violation": 0.051685775652813674
       },
       "MIMIC_III_CXR": {
-        "violation": 0.01062222222222222
+        "violation": 0.0041
       },
       "PRIV_DS": {
-        "violation": 0.10410318009099194
+        "violation": 0.045401447500361174
       },
       "SumPubMed": {
-        "violation": 0.12335494167353582
+        "violation": 0.0554362842436349
       }
     },
     "MIMIC_IV_BHC": {
       "ACI_Bench": {
-        "violation": 0.13930555555555554
+        "violation": 0.07908033033033034
       },
       "MIMIC_IV_BHC": {
-        "violation": 0.1362859636325229
+        "violation": 0.10335157770733196
       },
       "MIMIC_III_CXR": {
-        "violation": 0.020827777777777775
+        "violation": 0.0041
       },
       "PRIV_DS": {
-        "violation": 0.09160412515343883
+        "violation": 0.06530729681182318
       },
       "SumPubMed": {
-        "violation": 0.1341204070006466
+        "violation": 0.06669775675498568
       }
     },
     "MIMIC_III_CXR": {
       "ACI_Bench": {
-        "violation": 0.2717582582582583
+        "violation": 0.10445645645645646
       },
       "MIMIC_IV_BHC": {
-        "violation": 0.628977987998932
+        "violation": 0.05902493327150337
       },
       "MIMIC_III_CXR": {
-        "violation": 0.09307777777777776
+        "violation": 0.020866666666666665
       },
       "PRIV_DS": {
-        "violation": 0.5051576726129337
+        "violation": 0.05686899049672255
       },
       "SumPubMed": {
-        "violation": 0.5645982720750683
+        "violation": 0.11108273822377575
       }
     },
     "PRIV_DS": {
       "ACI_Bench": {
-        "violation": 0.15431306306306306
+        "violation": 0.09498873873873873
       },
       "MIMIC_IV_BHC": {
-        "violation": 0.18612930453928528
+        "violation": 0.15461225426943928
       },
       "MIMIC_III_CXR": {
-        "violation": 0.02271111111111111
+        "violation": 0.005766666666666666
       },
       "PRIV_DS": {
-        "violation": 0.11664953763475984
+        "violation": 0.09101785365055175
       },
       "SumPubMed": {
-        "violation": 0.15095281545916486
+        "violation": 0.07914258088217964
       }
     },
     "SumPubMed": {
       "ACI_Bench": {
-        "violation": 0.1285135135135135
+        "violation": 0.08272897897897896
       },
       "MIMIC_IV_BHC": {
-        "violation": 0.1745724860773412
+        "violation": 0.1155671134787465
       },
       "MIMIC_III_CXR": {
-        "violation": 0.009861111111111109
+        "violation": 0.004300000000000001
       },
       "PRIV_DS": {
-        "violation": 0.10485101357999578
+        "violation": 0.0712068563781494
       },
       "SumPubMed": {
-        "violation": 0.12290471109567208
+        "violation": 0.07387115656748355
       }
     }
   },
   "length_shift": {
     "ACI_Bench": {
       "short\u2192long": {
-        "omit_violation": 0.20297849462365591,
+        "omit_violation": 0.03574014336917563,
         "fact_violation": 0.11387096774193547
       },
       "long\u2192short": {
-        "omit_violation": 0.09106557377049182,
+        "omit_violation": 0.014901639344262292,
         "fact_violation": 0.12196721311475411
       },
       "random\u2192random": {
-        "omit_violation": 0.13384609609609613,
+        "omit_violation": 0.05357132132132133,
         "fact_violation": 0.12378378378378381
       }
     },
     "MIMIC_IV_BHC": {
       "short\u2192long": {
-        "omit_violation": 0.13180124137778854,
+        "omit_violation": 0.0670299667560276,
         "fact_violation": 0.14611999999999997
       },
       "long\u2192short": {
-        "omit_violation": 0.13752055266203156,
+        "omit_violation": 0.07410570885429428,
         "fact_violation": 0.10520000000000002
       },
       "random\u2192random": {
-        "omit_violation": 0.13439581817208957,
+        "omit_violation": 0.10078223755106024,
         "fact_violation": 0.12746666666666667
       }
     },
     "MIMIC_III_CXR": {
       "short\u2192long": {
-        "omit_violation": 0.13939333333333337,
+        "omit_violation": 0.020559999999999995,
         "fact_violation": 0.05199999999999999
       },
       "long\u2192short": {
-        "omit_violation": 0.07999999999999999,
+        "omit_violation": 0.017479999999999992,
         "fact_violation": 0.06400000000000002
       },
       "random\u2192random": {
-        "omit_violation": 0.09273333333333333,
+        "omit_violation": 0.018549999999999997,
         "fact_violation": 0.05919999999999999
       }
     },
     "PRIV_DS": {
       "short\u2192long": {
-        "omit_violation": 0.11249001543026893,
+        "omit_violation": 0.07614198075161126,
         "fact_violation": 0.17488000000000006
       },
       "long\u2192short": {
-        "omit_violation": 0.12062541932112644,
+        "omit_violation": 0.08972418566991269,
         "fact_violation": 0.08487999999999996
       },
       "random\u2192random": {
-        "omit_violation": 0.11777650760351566,
+        "omit_violation": 0.09251110234426868,
         "fact_violation": 0.12706666666666666
       }
     },
     "SumPubMed": {
       "short\u2192long": {
-        "omit_violation": 0.1642430593150167,
+        "omit_violation": 0.08241661646759703,
         "fact_violation": 0.07999999999999999
       },
       "long\u2192short": {
-        "omit_violation": 0.10962953554966086,
+        "omit_violation": 0.06617918218418926,
         "fact_violation": 0.06867999999999999
       },
       "random\u2192random": {
-        "omit_violation": 0.12645597983102305,
+        "omit_violation": 0.07497851500397296,
         "fact_violation": 0.06913333333333332
       }
     }
