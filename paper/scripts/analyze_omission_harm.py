@@ -55,6 +55,7 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from care import config
 from care.utils import LLMClient, load_jsonl, setup_logging
+from care.calibration import deployed_omission_thresholds
 
 logger = setup_logging("HarmAnalysis")
 
@@ -367,8 +368,9 @@ def load_thresholds(
     if thresholds_file is not None:
         with open(thresholds_file) as f:
             thresholds = json.load(f)
-        tau = thresholds["omission"]["tau"]
-        gamma = thresholds["omission"]["gamma"]
+        omission = deployed_omission_thresholds(thresholds)  # LTT-FST entry
+        tau = omission["tau"]
+        gamma = omission["gamma"]
         alpha_in_file = thresholds.get("config", {}).get("alpha_omit", "?")
         logger.info(
             f"Loaded thresholds from {thresholds_file}: tau={tau}, gamma={gamma} (alpha={alpha_in_file})"
