@@ -141,7 +141,8 @@ All datasets use α = 0.15, seed = 42, 70/30 cal/test split.
 ## Method
 
 **Hallucination Controller** — 1D CRC:
-- Flag set: F_λ(X) = {v : p̂_hall(v) ≤ λ}
+- Flag set: F_λ(X) = {v : p̂_fact(v) ≤ λ}, where p̂_fact is the predicted
+  probability that sentence v is factual
 - Loss: L = 1{any unflagged hallucination exists}
 - λ* = smallest λ satisfying the CRC bound
 - L is monotone non-increasing in λ, so scalar CRC gives E[L] ≤ α with the

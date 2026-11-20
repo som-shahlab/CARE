@@ -787,8 +787,17 @@ def select_omission_threshold_fst_fractional(
     Walks the grid in (tau+gamma)-DESCENDING order, starting from (1, 1), which
     surfaces nothing, and returns the first cell whose CRC bound
     (n/(n+1)) R_hat + 1/(n+1) <= alpha. This is NOT Learn-Then-Test. It uses no
-    p-values and no delta, and the surfaced sets are not nested along this order,
-    so the scalar-CRC expectation guarantee does not carry over either.
+    p-values and no delta.
+
+    Guarantee depends on the ordering:
+    - "tau_plus_gamma" and "lex_tau": the surfaced sets are not nested along the
+      order (e.g. (1, 0.95) -> (0.95, 1) surfaces more through tau and fewer
+      through gamma), so the loss is not monotone along the walk and the
+      scalar-CRC guarantee E[L] <= alpha does NOT hold.
+    - "diagonal": tau and gamma decrease together, so each cell surfaces a
+      superset of the previous one and the loss is monotone non-increasing along
+      the walk. The first feasible cell is then the standard scalar-CRC choice,
+      and E[L] <= alpha holds (calibration and test docs exchangeable).
 
     Args:
         documents: calibration documents (same format as the 2D-Joint variant).
